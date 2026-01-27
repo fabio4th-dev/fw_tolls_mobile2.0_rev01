@@ -14,9 +14,7 @@
     <link rel="apple-touch-icon" href="fw_mini.ICO">
     
     <!-- CDNs -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     <!-- Biblioteca para scanner de QR Code -->
@@ -496,16 +494,15 @@
         <div id="loginScreen" class="login-container">
             <div class="login-box">
                 <div style="text-align: center; margin-bottom: 30px;">
-                    <!-- Logo Delservin simples e centralizado -->
-                    <div style="margin-bottom: 20px;">
-                        <img src="Delservin Logo.PNG" alt="Delservin" 
-                             style="height: 50px; width: auto;"
-                             onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 30\"><text x=\"50\" y=\"20\" text-anchor=\"middle\" fill=\"white\" font-weight=\"bold\"></text></svg> 
-                    </div>
-                    
-                    <h1 style="font-size: 24px; margin-bottom: 10px;">Sistema de Ferramentas</h1>
-                    <p style="opacity: 0.9;">Login Mobile</p>
-                </div>
+    <!-- Logo Delservin -->
+    <div style="margin-bottom: 20px;">
+        <div style="display: flex; justify-content: center; align-items: center;">
+            <img src="Delservin Logo.PNG" alt="Delservin" 
+                 style="height: 60px; width: auto; max-width: 200px;"
+                 onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\"width: 120px; height: 50px; 
+                 background: rgba(255,255,255,0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center;\"><span style=\"font-weight: bold; font-size: 18px; color: white;\"</span></div>'">
+        </div>
+    </div>
                 
                 <div id="loginError" class="notification error" style="display: none; position: relative; top: 0; transform: none; opacity: 1; margin-bottom: 20px;">
                     <i class="fas fa-exclamation-circle"></i> Credenciais inválidas
@@ -932,7 +929,7 @@
         }
 
         // ============================================
-        // FUNÇÕES AUSENTES QUE ESTAVAM FALTANDO
+        // FUNÇÕES PRINCIPAIS
         // ============================================
         
         // FUNÇÃO: Atualizar estatísticas de status
@@ -1904,8 +1901,8 @@
                     <div><strong>Categoria:</strong><br>${tool.category}</div>
                     <div><strong>Status:</strong><br><span style="color: ${getStatusColor(tool.status)}">${tool.status}</span></div>
                     <div><strong>Localização:</strong><br>${tool.location}</div>
-                    <div><strong>Condição:</strong><br>${tool.condition}</div>
-                    <div><strong>Quantidade:</strong><br>${tool.quantidade}</div>
+                    <div><strong>Condição:</strong><br>${tool.condition || 'N/A'}</div>
+                    <div><strong>Quantidade:</strong><br>${tool.quantidade || 1}</div>
                     <div><strong>Preço:</strong><br>R$ ${parseFloat(tool.preco || 0).toFixed(2).replace('.', ',')}</div>
                 </div>
                 
@@ -1936,22 +1933,14 @@
             // Mostrar modal
             document.getElementById('itemModal').style.display = 'flex';
             
-            // Eventos do modal - USANDO AS NOVAS FUNÇÕES
+            // Eventos do modal
             document.getElementById('modalQRBtn').addEventListener('click', function() {
                 const id = this.getAttribute('data-id');
-                closeItemModal(); // Usar função de fechar
+                closeItemModal();
                 generateQRCode(id);
             });
             
-            // O botão modalCloseBtn já tem evento na função setupModalEvents
-            // Mas para garantir, podemos adicionar aqui também:
-            const modalCloseBtn = document.getElementById('modalCloseBtn');
-            if (modalCloseBtn) {
-                // Remover evento anterior para evitar duplicação
-                const newCloseBtn = modalCloseBtn.cloneNode(true);
-                modalCloseBtn.parentNode.replaceChild(newCloseBtn, modalCloseBtn);
-                newCloseBtn.addEventListener('click', closeItemModal);
-            }
+            document.getElementById('modalCloseBtn').addEventListener('click', closeItemModal);
         }
 
         function generateQRCode(toolId) {
@@ -2160,19 +2149,24 @@
         }
 
         function showLoader(show) {
-            document.getElementById('loader').style.display = show ? 'block' : 'none';
+            const loader = document.getElementById('loader');
+            if (loader) {
+                loader.style.display = show ? 'block' : 'none';
+            }
         }
 
         function showNotification(message, type = 'info') {
             const notification = document.getElementById('notification');
             const content = document.getElementById('notificationContent');
             
-            content.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i> ${message}`;
-            notification.className = `notification ${type} show`;
-            
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 3000);
+            if (notification && content) {
+                content.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i> ${message}`;
+                notification.className = `notification ${type} show`;
+                
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
         }
 
         // Funções auxiliares do menu
@@ -2207,24 +2201,44 @@
         }
 
         // ============================================
-        // EVENT LISTENERS
+        // EVENT LISTENERS E INICIALIZAÇÃO
         // ============================================
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM carregado');
             setupEventListeners();
             checkSession();
         });
 
         function setupEventListeners() {
+            console.log('Configurando eventos...');
+            
             // Login
-            document.getElementById('loginBtn').addEventListener('click', handleLogin);
+            const loginBtn = document.getElementById('loginBtn');
+            if (loginBtn) {
+                loginBtn.addEventListener('click', handleLogin);
+            }
             
             // Menu
-            document.getElementById('menuBtn').addEventListener('click', openMenu);
-            document.getElementById('menuOverlay').addEventListener('click', closeMenu);
+            const menuBtn = document.getElementById('menuBtn');
+            if (menuBtn) {
+                menuBtn.addEventListener('click', openMenu);
+            }
+            
+            const menuOverlay = document.getElementById('menuOverlay');
+            if (menuOverlay) {
+                menuOverlay.addEventListener('click', closeMenu);
+            }
             
             // Scanner
-            document.getElementById('startScannerBtn').addEventListener('click', startScanner);
-            document.getElementById('stopScannerBtn').addEventListener('click', stopScanner);
+            const startScannerBtn = document.getElementById('startScannerBtn');
+            if (startScannerBtn) {
+                startScannerBtn.addEventListener('click', startScanner);
+            }
+            
+            const stopScannerBtn = document.getElementById('stopScannerBtn');
+            if (stopScannerBtn) {
+                stopScannerBtn.addEventListener('click', stopScanner);
+            }
             
             // Tabs
             document.querySelectorAll('.tab-button').forEach(btn => {
@@ -2235,45 +2249,66 @@
             });
             
             // Botões principais
-            document.getElementById('syncNowBtn').addEventListener('click', async () => {
-                await fetchAllFromSupabase();
-            });
-            
-            document.getElementById('syncAllBtn').addEventListener('click', async () => {
-                if (confirm('Buscar TODOS os itens?')) {
+            const syncNowBtn = document.getElementById('syncNowBtn');
+            if (syncNowBtn) {
+                syncNowBtn.addEventListener('click', async () => {
                     await fetchAllFromSupabase();
-                }
-            });
+                });
+            }
             
-            document.getElementById('syncUpdatesBtn').addEventListener('click', async () => {
-                showNotification('Funcionalidade em desenvolvimento', 'info');
-            });
-            
-            document.getElementById('clearCacheBtn').addEventListener('click', async () => {
-                if (confirm('Limpar cache?')) {
-                    if (db) {
-                        const transaction = db.transaction([STORE_NAME], 'readwrite');
-                        const store = transaction.objectStore(STORE_NAME);
-                        store.clear();
-                        tools = [];
-                        updateUI();
-                        showNotification('Cache limpo', 'success');
+            const syncAllBtn = document.getElementById('syncAllBtn');
+            if (syncAllBtn) {
+                syncAllBtn.addEventListener('click', async () => {
+                    if (confirm('Buscar TODOS os itens?')) {
+                        await fetchAllFromSupabase();
                     }
-                }
-            });
+                });
+            }
             
-            document.getElementById('addItemBtn').addEventListener('click', () => {
-                switchTab('cadastro');
-            });
+            const syncUpdatesBtn = document.getElementById('syncUpdatesBtn');
+            if (syncUpdatesBtn) {
+                syncUpdatesBtn.addEventListener('click', async () => {
+                    showNotification('Funcionalidade em desenvolvimento', 'info');
+                });
+            }
             
-            document.getElementById('viewAllBtn').addEventListener('click', () => {
-                switchTab('catalogo');
-            });
+            const clearCacheBtn = document.getElementById('clearCacheBtn');
+            if (clearCacheBtn) {
+                clearCacheBtn.addEventListener('click', async () => {
+                    if (confirm('Limpar cache?')) {
+                        if (db) {
+                            const transaction = db.transaction([STORE_NAME], 'readwrite');
+                            const store = transaction.objectStore(STORE_NAME);
+                            store.clear();
+                            tools = [];
+                            updateUI();
+                            showNotification('Cache limpo', 'success');
+                        }
+                    }
+                });
+            }
             
-            document.getElementById('loadMoreBtn').addEventListener('click', () => {
-                loadedToolsCount += 50;
-                updateToolsList();
-            });
+            const addItemBtn = document.getElementById('addItemBtn');
+            if (addItemBtn) {
+                addItemBtn.addEventListener('click', () => {
+                    switchTab('cadastro');
+                });
+            }
+            
+            const viewAllBtn = document.getElementById('viewAllBtn');
+            if (viewAllBtn) {
+                viewAllBtn.addEventListener('click', () => {
+                    switchTab('catalogo');
+                });
+            }
+            
+            const loadMoreBtn = document.getElementById('loadMoreBtn');
+            if (loadMoreBtn) {
+                loadMoreBtn.addEventListener('click', () => {
+                    loadedToolsCount += 50;
+                    updateToolsList();
+                });
+            }
             
             // Configurar eventos dos modais
             setupModalEvents();
