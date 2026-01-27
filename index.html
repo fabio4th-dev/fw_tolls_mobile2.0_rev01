@@ -496,6 +496,13 @@
         <div id="loginScreen" class="login-container">
             <div class="login-box">
                 <div style="text-align: center; margin-bottom: 30px;">
+                    <!-- Logo Delservin simples e centralizado -->
+                    <div style="margin-bottom: 20px;">
+                        <img src="Delservin Logo.PNG" alt="Delservin" 
+                             style="height: 50px; width: auto;"
+                             onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\"
+                    </div>
+                    
                     <h1 style="font-size: 24px; margin-bottom: 10px;">Sistema de Ferramentas</h1>
                     <p style="opacity: 0.9;">Login Mobile</p>
                 </div>
@@ -517,16 +524,6 @@
                 <button type="button" class="mobile-btn mobile-btn-primary" id="loginBtn">
                     <i class="fas fa-sign-in-alt"></i> Entrar
                 </button>
-                
-                <div style="margin-top: 25px; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 10px;">
-                    <p style="text-align: center; font-size: 14px; margin-bottom: 10px;">Credenciais de teste:</p>
-                    <div style="font-size: 12px;">
-                        <p><strong>DEV:</strong> fabio@fwcompany.com.br</p>
-                        <p><strong>Senha:</strong> FabioFW123@</p>
-                        <p><strong>Operador:</strong> operador@empresa.com.br</p>
-                        <p><strong>Senha:</strong> Operador123@</p>
-                    </div>
-                </div>
             </div>
         </div>
         
@@ -887,6 +884,52 @@
         let videoStream = null;
         let scanningInterval = null;
         let currentScannedData = null;
+
+        // ============================================
+        // FUNÇÕES DE CONTROLE DE MODAL
+        // ============================================
+
+        function setupModalEvents() {
+            // Fechar modal principal
+            const closeModalBtn = document.getElementById('closeModalBtn');
+            if (closeModalBtn) {
+                closeModalBtn.addEventListener('click', closeItemModal);
+            }
+            
+            // Fechar modal QR Code
+            const closeQRModalBtn = document.getElementById('closeQRModalBtn');
+            if (closeQRModalBtn) {
+                closeQRModalBtn.addEventListener('click', closeQRModal);
+            }
+            
+            // Fechar modais clicando fora do conteúdo
+            const itemModal = document.getElementById('itemModal');
+            const qrModal = document.getElementById('qrModal');
+            
+            if (itemModal) {
+                itemModal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        closeItemModal();
+                    }
+                });
+            }
+            
+            if (qrModal) {
+                qrModal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        closeQRModal();
+                    }
+                });
+            }
+        }
+
+        function closeItemModal() {
+            document.getElementById('itemModal').style.display = 'none';
+        }
+
+        function closeQRModal() {
+            document.getElementById('qrModal').style.display = 'none';
+        }
 
         // ============================================
         // FUNÇÕES AUSENTES QUE ESTAVAM FALTANDO
@@ -1893,16 +1936,22 @@
             // Mostrar modal
             document.getElementById('itemModal').style.display = 'flex';
             
-            // Eventos do modal
+            // Eventos do modal - USANDO AS NOVAS FUNÇÕES
             document.getElementById('modalQRBtn').addEventListener('click', function() {
                 const id = this.getAttribute('data-id');
-                document.getElementById('itemModal').style.display = 'none';
+                closeItemModal(); // Usar função de fechar
                 generateQRCode(id);
             });
             
-            document.getElementById('modalCloseBtn').addEventListener('click', function() {
-                document.getElementById('itemModal').style.display = 'none';
-            });
+            // O botão modalCloseBtn já tem evento na função setupModalEvents
+            // Mas para garantir, podemos adicionar aqui também:
+            const modalCloseBtn = document.getElementById('modalCloseBtn');
+            if (modalCloseBtn) {
+                // Remover evento anterior para evitar duplicação
+                const newCloseBtn = modalCloseBtn.cloneNode(true);
+                modalCloseBtn.parentNode.replaceChild(newCloseBtn, modalCloseBtn);
+                newCloseBtn.addEventListener('click', closeItemModal);
+            }
         }
 
         function generateQRCode(toolId) {
@@ -1956,9 +2005,7 @@
                 }
             });
             
-            document.getElementById('closeQRBtn').addEventListener('click', function() {
-                document.getElementById('qrModal').style.display = 'none';
-            });
+            document.getElementById('closeQRBtn').addEventListener('click', closeQRModal);
         }
 
         // ============================================
@@ -1968,30 +2015,31 @@
             const email = document.getElementById('loginEmail').value.trim();
             const password = document.getElementById('loginPassword').value;
             
+            // Dados de usuários
             const users = {
                 'fabio@fwcompany.com.br': {
                     password: 'FabioFW123@',
-                    name: 'Fábio Mendes',
                     role: 'dev',
+                    name: 'Fábio Mendes',
                     email: 'fabio@fwcompany.com.br'
                 },
-                'operador@empresa.com.br': {
-                    password: 'Operador123@',
-                    name: 'Operador 1',
-                    role: 'operator',
-                    email: 'operador@empresa.com.br'
+                'emerson.silva@fwcompany.com.br': {
+                    password: 'EmersonFW1@',
+                    role: 'almoxarife',
+                    name: 'Emerson Silva',
+                    email: 'emerson.silva@fwcompany.com.br'
                 },
-                'supervisor@empresa.com.br': {
-                    password: 'Supervisor123@',
-                    name: 'Supervisor',
-                    role: 'supervisor',
-                    email: 'supervisor@empresa.com.br'
+                'fwuser': {
+                    password: 'User123',
+                    role: 'user',
+                    name: 'Usuário Genérico',
+                    email: 'fwuser@fwcompany.com.br'
                 },
-                'admin@empresa.com.br': {
-                    password: 'Admin123@',
-                    name: 'Administrador',
-                    role: 'admin',
-                    email: 'admin@empresa.com.br'
+                'raquel@fwcompany.com.br': {
+                    password: 'RaqueL1234',
+                    role: 'user',
+                    name: 'Raquel',
+                    email: 'raquel@fwcompany.com.br'
                 }
             };
             
@@ -2226,6 +2274,9 @@
                 loadedToolsCount += 50;
                 updateToolsList();
             });
+            
+            // Configurar eventos dos modais
+            setupModalEvents();
             
             // Network
             window.addEventListener('online', () => {
