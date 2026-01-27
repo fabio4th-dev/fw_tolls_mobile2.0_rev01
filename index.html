@@ -121,6 +121,89 @@
             z-index: 100;
         }
         
+        /* Menu Lateral */
+        .mobile-sidebar {
+            position: fixed;
+            top: 0;
+            right: -300px;
+            width: 300px;
+            height: 100vh;
+            background: white;
+            z-index: 2000;
+            transition: right 0.3s;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            padding-top: calc(20px + env(safe-area-inset-top));
+            padding-bottom: calc(20px + env(safe-area-inset-bottom));
+        }
+        
+        .mobile-sidebar.open {
+            right: 0;
+        }
+        
+        .menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1999;
+            display: none;
+        }
+        
+        .menu-header {
+            padding: 20px;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            color: white;
+        }
+        
+        .menu-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        
+        .menu-footer {
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: none;
+            border: none;
+            width: 100%;
+            text-align: left;
+            color: var(--text-color);
+            font-size: 16px;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            transition: all 0.3s;
+        }
+        
+        .menu-item:hover {
+            background: var(--light-color);
+        }
+        
+        .menu-item i {
+            margin-right: 12px;
+            width: 24px;
+            text-align: center;
+            color: var(--secondary-color);
+        }
+        
+        .menu-item.logout {
+            color: var(--danger-color);
+        }
+        
+        .menu-item.logout i {
+            color: var(--danger-color);
+        }
+        
         /* Tabs */
         .tab-button {
             flex: 1;
@@ -392,6 +475,8 @@
                     <div style="font-size: 12px;">
                         <p><strong>DEV:</strong> fabio@fwcompany.com.br</p>
                         <p><strong>Senha:</strong> FabioFW123@</p>
+                        <p><strong>Operador:</strong> operador@empresa.com.br</p>
+                        <p><strong>Senha:</strong> Operador123@</p>
                     </div>
                 </div>
             </div>
@@ -627,6 +712,58 @@
                     <span>Config</span>
                 </button>
             </footer>
+        </div>
+        
+        <!-- Menu Lateral -->
+        <div id="menuOverlay" class="menu-overlay"></div>
+        <div id="mobileSidebar" class="mobile-sidebar">
+            <div class="menu-header">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div style="width: 50px; height: 50px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px;">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div>
+                        <h3 id="menuUserName">Usuário</h3>
+                        <p id="menuUserEmail" style="font-size: 14px; opacity: 0.9;">email@exemplo.com</p>
+                        <p id="menuUserRole" style="font-size: 12px; background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 12px; display: inline-block;">DEV</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="menu-content">
+                <button class="menu-item" onclick="showUserProfile()">
+                    <i class="fas fa-user-circle"></i> Meu Perfil
+                </button>
+                <button class="menu-item" onclick="switchTab('config')">
+                    <i class="fas fa-cog"></i> Configurações
+                </button>
+                <button class="menu-item" onclick="showAbout()">
+                    <i class="fas fa-info-circle"></i> Sobre o Sistema
+                </button>
+                <button class="menu-item" onclick="showHelp()">
+                    <i class="fas fa-question-circle"></i> Ajuda
+                </button>
+                
+                <div style="margin: 20px 0; padding: 0 15px; font-size: 12px; color: var(--gray-color); text-transform: uppercase;">
+                    Administração
+                </div>
+                
+                <button class="menu-item" onclick="manageUsers()">
+                    <i class="fas fa-users"></i> Gerenciar Usuários
+                </button>
+                <button class="menu-item" onclick="showReports()">
+                    <i class="fas fa-chart-bar"></i> Relatórios
+                </button>
+                <button class="menu-item" onclick="backupData()">
+                    <i class="fas fa-database"></i> Backup de Dados
+                </button>
+            </div>
+            
+            <div class="menu-footer">
+                <button class="menu-item logout" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Sair do Sistema
+                </button>
+            </div>
         </div>
         
         <!-- Modal para Detalhes do Item -->
@@ -924,7 +1061,7 @@
         }
 
         // ============================================
-        // FUNÇÕES DE INTERFACE - CORRIGIDAS
+        // FUNÇÕES DE INTERFACE
         // ============================================
         function updateUI() {
             // Buscar total salvo
@@ -954,7 +1091,6 @@
             }
         }
 
-        // FUNÇÃO CORRIGIDA: Agora mostra miniaturas
         function updateToolsList() {
             const listElement = document.getElementById('toolsList');
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
@@ -1046,7 +1182,6 @@
             });
         }
 
-        // FUNÇÃO NOVA: Mostrar detalhes do item
         function showToolDetails(toolId) {
             const tool = tools.find(t => t.id == toolId);
             if (!tool) return;
@@ -1115,7 +1250,6 @@
             });
         }
 
-        // FUNÇÃO NOVA: Gerar QR Code
         function generateQRCode(toolId) {
             const tool = tools.find(t => t.id == toolId);
             if (!tool) return;
@@ -1172,7 +1306,6 @@
             });
         }
 
-        // FUNÇÃO NOVA: Carregar formulário de cadastro
         function loadCadastroForm() {
             document.getElementById('cadastroForm').innerHTML = `
                 <div class="card">
@@ -1264,7 +1397,6 @@
             document.getElementById('limparFormBtn').addEventListener('click', clearCadastroForm);
         }
 
-        // FUNÇÃO NOVA: Salvar novo item
         async function saveNewItem() {
             const nome = document.getElementById('cadastroNome').value.trim();
             const codigo = document.getElementById('cadastroCodigo').value.trim();
@@ -1357,7 +1489,6 @@
             document.getElementById('cadastroDescricao').value = '';
         }
 
-        // FUNÇÃO NOVA: Scanner QR Code
         function initializeScanner() {
             document.getElementById('tabScanner').innerHTML = `
                 <h2 style="margin-bottom: 20px; font-size: 20px;">Scanner QR Code</h2>
@@ -1446,6 +1577,141 @@
                 <i class="fas fa-qrcode" style="font-size: 60px; color: var(--gray-color); margin-bottom: 15px;"></i>
                 <p style="text-align: center; color: var(--gray-color);">Scanner parado</p>
             `;
+        }
+
+        // ============================================
+        // FUNÇÕES DO MENU E LOGIN
+        // ============================================
+        function handleLogin() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            
+            // Dados de usuários
+        const users = {
+            'fabio@fwcompany.com.br': {
+                password: 'FabioFW123@',
+                role: 'dev',
+                name: 'Fábio Mendes',
+                email: 'fabio@fwcompany.com.br'
+            },
+            'emerson.silva@fwcompany.com.br': {
+                password: 'EmersonFW1@',
+                role: 'almoxarife',
+                name: 'Emerson Silva',
+                email: 'emerson.silva@fwcompany.com.br'
+            },
+            'fwuser': {
+                password: 'User123',
+                role: 'user',
+                name: 'Usuário Genérico',
+                email: 'fwuser@fwcompany.com.br'
+            },
+            'raquel@fwcompany.com.br': {
+                password: 'RaqueL1234',
+                role: 'user',
+                name: 'Raquel',
+                email: 'raquel@fwcompany.com.br'
+            }
+                // Adicione mais usuários conforme necessário
+            };
+            
+            if (users[email] && users[email].password === password) {
+                currentUser = users[email];
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                showDashboard();
+                initializeSystem();
+            } else {
+                showNotification('Credenciais inválidas', 'error');
+            }
+        }
+
+        function showDashboard() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('mobileDashboard').style.display = 'flex';
+            
+            // Atualizar badge do usuário no header
+            if (currentUser) {
+                const userBadge = document.getElementById('userBadge');
+                if (userBadge) {
+                    userBadge.textContent = 
+                        currentUser.role === 'dev' ? 'DEV' : 
+                        currentUser.role === 'admin' ? 'ADMIN' : 
+                        currentUser.role === 'supervisor' ? 'SUPERVISOR' : 'OPERADOR';
+                }
+            }
+        }
+
+        // Funções do Menu
+        function openMenu() {
+            document.getElementById('mobileSidebar').classList.add('open');
+            document.getElementById('menuOverlay').style.display = 'block';
+            
+            // Atualizar informações do usuário no menu
+            if (currentUser) {
+                document.getElementById('menuUserName').textContent = currentUser.name;
+                document.getElementById('menuUserEmail').textContent = currentUser.email;
+                document.getElementById('menuUserRole').textContent = 
+                    currentUser.role === 'dev' ? 'DEV' : 
+                    currentUser.role === 'admin' ? 'ADMIN' : 
+                    currentUser.role === 'supervisor' ? 'SUPERVISOR' : 'OPERADOR';
+            }
+        }
+
+        function closeMenu() {
+            document.getElementById('mobileSidebar').classList.remove('open');
+            document.getElementById('menuOverlay').style.display = 'none';
+        }
+
+        function logout() {
+            if (confirm('Deseja realmente sair do sistema?')) {
+                // Limpar dados da sessão
+                localStorage.removeItem('currentUser');
+                currentUser = null;
+                
+                // Fechar menu
+                closeMenu();
+                
+                // Voltar para tela de login
+                document.getElementById('mobileDashboard').style.display = 'none';
+                document.getElementById('loginScreen').style.display = 'flex';
+                
+                // Limpar campos de login
+                document.getElementById('loginEmail').value = '';
+                document.getElementById('loginPassword').value = '';
+                
+                showNotification('Logout realizado com sucesso', 'success');
+            }
+        }
+
+        // Funções auxiliares do menu
+        function showUserProfile() {
+            alert(`Perfil do Usuário:\n\nNome: ${currentUser.name}\nEmail: ${currentUser.email}\nFunção: ${currentUser.role}`);
+            closeMenu();
+        }
+
+        function manageUsers() {
+            closeMenu();
+            showNotification('Gerenciamento de usuários em desenvolvimento', 'info');
+        }
+
+        function showReports() {
+            closeMenu();
+            showNotification('Relatórios em desenvolvimento', 'info');
+        }
+
+        function backupData() {
+            closeMenu();
+            showNotification('Backup em desenvolvimento', 'info');
+        }
+
+        function showAbout() {
+            closeMenu();
+            alert('Sistema de Ferramentas Mobile v1.0.0\n\nDesenvolvido para gestão de ferramentas e equipamentos.\n\n© 2026 FW Company');
+        }
+
+        function showHelp() {
+            closeMenu();
+            alert('Ajuda do Sistema:\n\n1. Dashboard: Visão geral\n2. Novo: Cadastrar itens\n3. Itens: Lista completa\n4. Scanner: Ler QR Codes\n5. Config: Configurações\n\nUse o menu para mais opções.');
         }
 
         // ============================================
@@ -1613,6 +1879,10 @@
             // Login
             document.getElementById('loginBtn').addEventListener('click', handleLogin);
             
+            // Menu
+            document.getElementById('menuBtn').addEventListener('click', openMenu);
+            document.getElementById('menuOverlay').addEventListener('click', closeMenu);
+            
             // Tabs
             document.querySelectorAll('.tab-button').forEach(btn => {
                 btn.addEventListener('click', function() {
@@ -1739,34 +2009,6 @@
                     // Carregar configurações
                     break;
             }
-        }
-
-        function handleLogin() {
-            const email = document.getElementById('loginEmail').value.trim();
-            const password = document.getElementById('loginPassword').value;
-            
-            const users = {
-                'fabio@fwcompany.com.br': {
-                    password: 'FabioFW123@',
-                    name: 'Fábio Mendes',
-                    role: 'dev',
-                    email: 'fabio@fwcompany.com.br'
-                }
-            };
-            
-            if (users[email] && users[email].password === password) {
-                currentUser = users[email];
-                localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                showDashboard();
-                initializeSystem();
-            } else {
-                showNotification('Credenciais inválidas', 'error');
-            }
-        }
-
-        function showDashboard() {
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('mobileDashboard').style.display = 'flex';
         }
 
         function checkSession() {
