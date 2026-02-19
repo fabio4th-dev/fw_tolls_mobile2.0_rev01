@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -7,19 +8,19 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#2c3e50">
     <title>Sistema de Ferramentas Mobile</title>
-    
+
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="fw_mini.ICO">
     <link rel="shortcut icon" href="fw_mini.ICO" type="image/x-icon">
     <link rel="apple-touch-icon" href="fw_mini.ICO">
-    
+
     <!-- CDNs -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     <!-- Biblioteca para scanner de QR Code -->
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
-    
+
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -33,7 +34,7 @@
             --text-color: #2c3e50;
             --border-color: #bdc3c7;
         }
-        
+
         * {
             margin: 0;
             padding: 0;
@@ -41,8 +42,9 @@
             -webkit-tap-highlight-color: transparent;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
         }
-        
-        html, body {
+
+        html,
+        body {
             width: 100%;
             height: 100%;
             overflow-x: hidden;
@@ -53,14 +55,14 @@
             -webkit-text-size-adjust: 100%;
             -webkit-font-smoothing: antialiased;
         }
-        
+
         .app-container {
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             padding-bottom: env(safe-area-inset-bottom, 0);
         }
-        
+
         /* Login Screen */
         .login-container {
             flex: 1;
@@ -73,7 +75,7 @@
             padding-top: env(safe-area-inset-top, 20px);
             padding-bottom: env(safe-area-inset-bottom, 20px);
         }
-        
+
         .login-box {
             background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
             border-radius: 16px;
@@ -85,21 +87,21 @@
             position: relative;
             overflow: hidden;
         }
-        
+
         /* Dashboard Mobile */
         .mobile-dashboard {
             display: none;
             flex-direction: column;
             height: 100vh;
         }
-        
+
         .mobile-header {
             background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
             padding: 15px;
             padding-top: calc(15px + env(safe-area-inset-top, 0));
             color: white;
         }
-        
+
         .mobile-content {
             flex: 1;
             overflow-y: auto;
@@ -107,7 +109,7 @@
             padding-bottom: 70px;
             -webkit-overflow-scrolling: touch;
         }
-        
+
         .mobile-footer {
             position: fixed;
             bottom: 0;
@@ -120,7 +122,7 @@
             padding-bottom: calc(10px + env(safe-area-inset-bottom, 0));
             z-index: 100;
         }
-        
+
         /* Menu Lateral */
         .mobile-sidebar {
             position: fixed;
@@ -131,45 +133,45 @@
             background: white;
             z-index: 2000;
             transition: right 0.3s;
-            box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
             display: flex;
             flex-direction: column;
             padding-top: calc(20px + env(safe-area-inset-top));
             padding-bottom: calc(20px + env(safe-area-inset-bottom));
         }
-        
+
         .mobile-sidebar.open {
             right: 0;
         }
-        
+
         .menu-overlay {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0, 0, 0, 0.5);
             z-index: 1999;
             display: none;
         }
-        
+
         .menu-header {
             padding: 20px;
             background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
             color: white;
         }
-        
+
         .menu-content {
             flex: 1;
             overflow-y: auto;
             padding: 20px;
         }
-        
+
         .menu-footer {
             padding: 20px;
             border-top: 1px solid var(--border-color);
         }
-        
+
         .menu-item {
             display: flex;
             align-items: center;
@@ -184,26 +186,26 @@
             margin-bottom: 5px;
             transition: all 0.3s;
         }
-        
+
         .menu-item:hover {
             background: var(--light-color);
         }
-        
+
         .menu-item i {
             margin-right: 12px;
             width: 24px;
             text-align: center;
             color: var(--secondary-color);
         }
-        
+
         .menu-item.logout {
             color: var(--danger-color);
         }
-        
+
         .menu-item.logout i {
             color: var(--danger-color);
         }
-        
+
         /* Tabs */
         .tab-button {
             flex: 1;
@@ -217,16 +219,16 @@
             font-size: 11px;
             transition: all 0.3s;
         }
-        
+
         .tab-button.active {
             color: var(--secondary-color);
         }
-        
+
         .tab-button i {
             font-size: 18px;
             margin-bottom: 4px;
         }
-        
+
         /* Cards */
         .card {
             background: white;
@@ -235,7 +237,7 @@
             margin-bottom: 15px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
-        
+
         /* Miniaturas de Imagens */
         .thumbnail {
             width: 60px;
@@ -249,14 +251,14 @@
             color: var(--gray-color);
             font-size: 24px;
         }
-        
+
         .thumbnail img {
             width: 100%;
             height: 100%;
             object-fit: cover;
             border-radius: 8px;
         }
-        
+
         /* Loader */
         .loader {
             display: none;
@@ -268,12 +270,17 @@
             animation: spin 1s linear infinite;
             margin: 20px auto;
         }
-        
+
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
-        
+
         /* Modal */
         .modal-overlay {
             position: fixed;
@@ -288,7 +295,7 @@
             justify-content: center;
             padding: 20px;
         }
-        
+
         .modal-content {
             background: white;
             border-radius: 20px;
@@ -299,7 +306,7 @@
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
         }
-        
+
         /* Notifications */
         .notification {
             position: fixed;
@@ -310,42 +317,42 @@
             color: white;
             padding: 15px;
             border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
             z-index: 2000;
             transform: translateY(-100%);
             opacity: 0;
             transition: all 0.3s;
         }
-        
+
         .notification.show {
             transform: translateY(0);
             opacity: 1;
         }
-        
+
         .notification.success {
             background: var(--success-color);
         }
-        
+
         .notification.error {
             background: var(--danger-color);
         }
-        
+
         .notification.warning {
             background: var(--warning-color);
         }
-        
+
         /* Formulário */
         .form-group {
             margin-bottom: 20px;
         }
-        
+
         .form-group label {
             display: block;
             margin-bottom: 8px;
             font-weight: 500;
             font-size: 14px;
         }
-        
+
         .form-group input,
         .form-group select,
         .form-group textarea {
@@ -358,7 +365,7 @@
             -webkit-appearance: none;
             appearance: none;
         }
-        
+
         /* Botões */
         .mobile-btn {
             display: flex;
@@ -374,12 +381,12 @@
             width: 100%;
             margin-bottom: 10px;
         }
-        
+
         .mobile-btn-primary {
             background: var(--secondary-color);
             color: white;
         }
-        
+
         /* Scanner */
         .scanner-container {
             width: 100%;
@@ -394,7 +401,7 @@
             position: relative;
             overflow: hidden;
         }
-        
+
         .scanner-overlay {
             position: absolute;
             top: 0;
@@ -404,7 +411,7 @@
             pointer-events: none;
             z-index: 10;
         }
-        
+
         .scanner-frame {
             position: absolute;
             top: 50%;
@@ -416,7 +423,7 @@
             box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.5);
             border-radius: 12px;
         }
-        
+
         .scanner-line {
             position: absolute;
             width: 100%;
@@ -425,19 +432,24 @@
             box-shadow: 0 0 8px #00ff00;
             animation: scan 2s infinite linear;
         }
-        
+
         @keyframes scan {
-            0% { top: 0; }
-            100% { top: 100%; }
+            0% {
+                top: 0;
+            }
+
+            100% {
+                top: 100%;
+            }
         }
-        
+
         /* Tool Actions */
         .tool-actions {
             display: flex;
             gap: 8px;
             margin-top: 10px;
         }
-        
+
         .action-btn {
             flex: 1;
             padding: 8px;
@@ -449,17 +461,17 @@
             justify-content: center;
             gap: 5px;
         }
-        
+
         .action-btn.view {
             background: var(--secondary-color);
             color: white;
         }
-        
+
         .action-btn.qr {
             background: #8e44ad;
             color: white;
         }
-        
+
         /* Image Preview */
         .image-preview {
             width: 100%;
@@ -472,13 +484,13 @@
             margin-bottom: 15px;
             overflow: hidden;
         }
-        
+
         .image-preview img {
             max-width: 100%;
             max-height: 100%;
             object-fit: contain;
         }
-        
+
         /* Canvas do Scanner */
         #qr-canvas {
             display: none;
@@ -488,42 +500,46 @@
         }
     </style>
 </head>
+
 <body>
     <div class="app-container">
         <!-- Login Screen -->
         <div id="loginScreen" class="login-container">
             <div class="login-box">
                 <div style="text-align: center; margin-bottom: 30px;">
-    <!-- Logo Delservin -->
-    <div style="margin-bottom: 20px;">
-        <div style="display: flex; justify-content: center; align-items: center;">
-            <img src="Delservin Logo.PNG" alt="Delservin" 
-                 style="height: 60px; width: auto; max-width: 200px;"
-                 onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\"width: 120px; height: 50px; 
-                 background: rgba(255,255,255,0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center;\"><span style=\"font-weight: bold; font-size: 18px; color: white;\"</span></div>'">
-        </div>
-    </div>
-                
-                <div id="loginError" class="notification error" style="display: none; position: relative; top: 0; transform: none; opacity: 1; margin-bottom: 20px;">
+                    <!-- Logo Delservin -->
+                    <div style="margin-bottom: 20px;">
+                        <div style="display: flex; justify-content: center; align-items: center;">
+                            <img src="Delservin Logo.PNG" alt="Delservin"
+                                style="height: 60px; width: auto; max-width: 200px;"
+                                onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'width:120px; height:50px; background:rgba(255,255,255,0.2); border-radius:8px; display:flex; align-items:center; justify-content:center;\'><span style=\'font-weight:bold; font-size:18px; color:white;\'>DELSERVIN</span></div>'">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="loginError" class="notification error"
+                    style="display: none; position: relative; top: 0; transform: none; opacity: 1; margin-bottom: 20px;">
                     <i class="fas fa-exclamation-circle"></i> Credenciais inválidas
                 </div>
-                
+
                 <div class="form-group">
                     <label for="loginEmail">Email ou Usuário</label>
-                    <input type="text" id="loginEmail" placeholder="fabio@fwcompany.com.br" autocapitalize="off" autocomplete="username">
+                    <input type="text" id="loginEmail" placeholder="fabio@fwcompany.com.br" autocapitalize="off"
+                        autocomplete="username">
                 </div>
-                
+
                 <div class="form-group">
                     <label for="loginPassword">Senha</label>
-                    <input type="password" id="loginPassword" placeholder="Digite sua senha" autocomplete="current-password">
+                    <input type="password" id="loginPassword" placeholder="Digite sua senha"
+                        autocomplete="current-password">
                 </div>
-                
+
                 <button type="button" class="mobile-btn mobile-btn-primary" id="loginBtn">
                     <i class="fas fa-sign-in-alt"></i> Entrar
                 </button>
             </div>
         </div>
-        
+
         <!-- Dashboard Mobile -->
         <div id="mobileDashboard" class="mobile-dashboard">
             <!-- Header -->
@@ -532,15 +548,18 @@
                     <div>
                         <h1 style="font-size: 18px; font-weight: bold;">Sistema de Ferramentas</h1>
                         <div style="display: flex; align-items: center; gap: 10px; margin-top: 5px;">
-                            <span id="userBadge" style="background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 12px; font-size: 12px;">DEV</span>
-                            <span id="connectionStatus" style="background: rgba(231,76,60,0.2); color: #e74c3c; padding: 4px 10px; border-radius: 12px; font-size: 12px;">Offline</span>
+                            <span id="userBadge"
+                                style="background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 12px; font-size: 12px;">DEV</span>
+                            <span id="connectionStatus"
+                                style="background: rgba(231,76,60,0.2); color: #e74c3c; padding: 4px 10px; border-radius: 12px; font-size: 12px;">Offline</span>
                         </div>
                     </div>
-                    <button id="menuBtn" style="background: rgba(255,255,255,0.2); border: none; width: 44px; height: 44px; border-radius: 50%; color: white; font-size: 20px;">
+                    <button id="menuBtn"
+                        style="background: rgba(255,255,255,0.2); border: none; width: 44px; height: 44px; border-radius: 50%; color: white; font-size: 20px;">
                         <i class="fas fa-bars"></i>
                     </button>
                 </div>
-                
+
                 <!-- Stats -->
                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center;">
                     <div>
@@ -557,17 +576,18 @@
                     </div>
                 </div>
             </header>
-            
+
             <!-- Content Area -->
             <div class="mobile-content">
                 <!-- Dashboard Tab -->
                 <div id="tabDashboard" class="tab-content active">
                     <h2 style="margin-bottom: 20px; font-size: 20px;">Dashboard</h2>
-                    
+
                     <!-- Card de Controle de Sincronização -->
                     <div class="card">
                         <h3 style="margin-bottom: 15px;">Controle de Sincronização</h3>
-                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 10px;">
+                        <div
+                            style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 10px;">
                             <button id="syncAllBtn" class="mobile-btn" style="background: #8e44ad; color: white;">
                                 <i class="fas fa-database"></i> Buscar Tudo
                             </button>
@@ -579,7 +599,7 @@
                             <span id="syncInfo">Última sincronização: Nunca</span>
                         </div>
                     </div>
-                    
+
                     <div class="card">
                         <h3 style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
                             <i class="fas fa-chart-pie" style="color: var(--secondary-color);"></i>
@@ -589,35 +609,41 @@
                             <p style="text-align: center; color: var(--gray-color); padding: 20px;">Carregando...</p>
                         </div>
                     </div>
-                    
+
                     <div class="card">
                         <h3 style="margin-bottom: 15px;">Ações Rápidas</h3>
                         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
-                            <button class="mobile-btn" id="addItemBtn" style="background: var(--secondary-color); color: white;">
+                            <button class="mobile-btn" id="addItemBtn"
+                                style="background: var(--secondary-color); color: white;">
                                 <i class="fas fa-plus"></i> Novo Item
                             </button>
-                            <button class="mobile-btn" id="syncNowBtn" style="background: var(--success-color); color: white;">
+                            <button class="mobile-btn" id="syncNowBtn"
+                                style="background: var(--success-color); color: white;">
                                 <i class="fas fa-sync-alt"></i> Sincronizar
                             </button>
-                            <button class="mobile-btn" id="clearCacheBtn" style="background: var(--warning-color); color: white; grid-column: span 2;">
+                            <button class="mobile-btn" id="clearCacheBtn"
+                                style="background: var(--warning-color); color: white; grid-column: span 2;">
                                 <i class="fas fa-trash-alt"></i> Limpar Cache
                             </button>
                         </div>
                     </div>
-                    
+
                     <div class="card">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                             <h3>Itens Recentes</h3>
-                            <button id="viewAllBtn" style="background: none; border: none; color: var(--secondary-color); font-size: 14px;">
+                            <button id="viewAllBtn"
+                                style="background: none; border: none; color: var(--secondary-color); font-size: 14px;">
                                 Ver Todos
                             </button>
                         </div>
                         <div id="recentItems">
-                            <p style="text-align: center; color: var(--gray-color); padding: 20px;">Nenhum item cadastrado</p>
+                            <p style="text-align: center; color: var(--gray-color); padding: 20px;">Nenhum item
+                                cadastrado</p>
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Cadastro Tab -->
                 <div id="tabCadastro" class="tab-content" style="display: none;">
                     <h2 style="margin-bottom: 20px; font-size: 20px;">Cadastrar Item</h2>
@@ -625,77 +651,87 @@
                         <!-- Form será carregado aqui -->
                     </div>
                 </div>
-                
+
                 <!-- Catálogo Tab -->
                 <div id="tabCatalogo" class="tab-content" style="display: none;">
                     <div style="display: flex; gap: 10px; margin-bottom: 15px;">
                         <div style="flex: 1; position: relative;">
-                            <i class="fas fa-search" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--gray-color);"></i>
-                            <input type="text" id="searchInput" placeholder="Buscar..." style="width: 100%; padding: 12px 12px 12px 40px; border: 1px solid var(--border-color); border-radius: 10px; font-size: 16px;">
+                            <i class="fas fa-search"
+                                style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--gray-color);"></i>
+                            <input type="text" id="searchInput" placeholder="Buscar..."
+                                style="width: 100%; padding: 12px 12px 12px 40px; border: 1px solid var(--border-color); border-radius: 10px; font-size: 16px;">
                         </div>
-                        <button id="filterBtn" style="background: var(--light-color); border: none; width: 50px; border-radius: 10px;">
+                        <button id="filterBtn"
+                            style="background: var(--light-color); border: none; width: 50px; border-radius: 10px;">
                             <i class="fas fa-filter"></i>
                         </button>
                     </div>
-                    
+
                     <div style="margin-bottom: 15px; font-size: 14px; color: var(--gray-color); text-align: center;">
                         <span id="toolsCount">0 de 0 itens carregados</span>
-                        <button id="loadMoreBtn" style="background: none; border: none; color: var(--secondary-color); font-size: 14px; margin-left: 10px; display: none;">
+                        <button id="loadMoreBtn"
+                            style="background: none; border: none; color: var(--secondary-color); font-size: 14px; margin-left: 10px; display: none;">
                             Carregar mais
                         </button>
                     </div>
-                    
+
                     <div id="toolsList">
                         <!-- Lista será carregada aqui -->
                     </div>
                 </div>
-                
+
                 <!-- Scanner Tab -->
                 <div id="tabScanner" class="tab-content" style="display: none;">
                     <h2 style="margin-bottom: 20px; font-size: 20px;">Scanner QR Code</h2>
-                    
+
                     <div class="card">
                         <div class="scanner-container" id="scannerContainer">
-                            <i class="fas fa-qrcode" style="font-size: 60px; color: var(--gray-color); margin-bottom: 15px;"></i>
+                            <i class="fas fa-qrcode"
+                                style="font-size: 60px; color: var(--gray-color); margin-bottom: 15px;"></i>
                             <p style="text-align: center; color: var(--gray-color);">Área do scanner</p>
                             <p style="text-align: center; font-size: 12px; color: var(--gray-color); margin-top: 10px;">
                                 Toque para ativar a câmera
                             </p>
                         </div>
-                        
+
                         <div style="text-align: center; margin-top: 20px;">
-                            <button id="startScannerBtn" class="mobile-btn" style="background: var(--secondary-color); color: white;">
+                            <button id="startScannerBtn" class="mobile-btn"
+                                style="background: var(--secondary-color); color: white;">
                                 <i class="fas fa-camera"></i> Iniciar Scanner
                             </button>
-                            <button id="stopScannerBtn" class="mobile-btn" style="background: var(--danger-color); color: white; display: none;">
+                            <button id="stopScannerBtn" class="mobile-btn"
+                                style="background: var(--danger-color); color: white; display: none;">
                                 <i class="fas fa-stop"></i> Parar Scanner
                             </button>
                         </div>
-                        
+
                         <div id="scannerResult" style="margin-top: 20px; display: none;">
                             <h4 style="margin-bottom: 10px;">Resultado:</h4>
-                            <div id="scannedData" style="background: var(--light-color); padding: 15px; border-radius: 8px; font-size: 14px;">
+                            <div id="scannedData"
+                                style="background: var(--light-color); padding: 15px; border-radius: 8px; font-size: 14px;">
                                 <!-- Dados escaneados aparecerão aqui -->
                             </div>
                             <div style="margin-top: 15px;">
-                                <button id="viewScannedItemBtn" class="mobile-btn" style="background: var(--secondary-color); color: white; display: none;">
+                                <button id="viewScannedItemBtn" class="mobile-btn"
+                                    style="background: var(--secondary-color); color: white; display: none;">
                                     <i class="fas fa-eye"></i> Ver Item
                                 </button>
-                                <button id="scanAgainBtn" class="mobile-btn" style="background: var(--warning-color); color: white;">
+                                <button id="scanAgainBtn" class="mobile-btn"
+                                    style="background: var(--warning-color); color: white;">
                                     <i class="fas fa-redo"></i> Escanear Novamente
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Config Tab -->
                 <div id="tabConfig" class="tab-content" style="display: none;">
                     <h2 style="margin-bottom: 20px; font-size: 20px;">Configurações</h2>
-                    
+
                     <div class="card">
                         <h3 style="margin-bottom: 15px;">Configurações do Sistema</h3>
-                        
+
                         <div class="form-group">
                             <label for="syncLimit">Limite de itens por sincronização:</label>
                             <select id="syncLimit" class="form-control">
@@ -705,12 +741,12 @@
                                 <option value="0">Todos os itens</option>
                             </select>
                         </div>
-                        
+
                         <div class="form-group">
                             <label for="cacheSize">Tamanho máximo do cache (MB):</label>
                             <input type="number" id="cacheSize" min="10" max="1000" value="100">
                         </div>
-                        
+
                         <div class="form-group">
                             <label for="autoSync">Sincronização automática:</label>
                             <select id="autoSync" class="form-control">
@@ -718,11 +754,12 @@
                                 <option value="enabled" selected>Ativada</option>
                             </select>
                         </div>
-                        
-                        <button id="saveConfigBtn" class="mobile-btn" style="background: var(--success-color); color: white;">
+
+                        <button id="saveConfigBtn" class="mobile-btn"
+                            style="background: var(--success-color); color: white;">
                             <i class="fas fa-save"></i> Salvar Configurações
                         </button>
-                        
+
                         <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color);">
                             <h4 style="margin-bottom: 10px;">Informações do Sistema</h4>
                             <div style="font-size: 14px;">
@@ -734,11 +771,11 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Loader -->
                 <div id="loader" class="loader"></div>
             </div>
-            
+
             <!-- Footer Tabs -->
             <footer class="mobile-footer">
                 <button class="tab-button active" data-tab="dashboard">
@@ -763,23 +800,26 @@
                 </button>
             </footer>
         </div>
-        
+
         <!-- Menu Lateral -->
         <div id="menuOverlay" class="menu-overlay"></div>
         <div id="mobileSidebar" class="mobile-sidebar">
             <div class="menu-header">
                 <div style="display: flex; align-items: center; gap: 15px;">
-                    <div style="width: 50px; height: 50px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px;">
+                    <div
+                        style="width: 50px; height: 50px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px;">
                         <i class="fas fa-user"></i>
                     </div>
                     <div>
                         <h3 id="menuUserName">Usuário</h3>
                         <p id="menuUserEmail" style="font-size: 14px; opacity: 0.9;">email@exemplo.com</p>
-                        <p id="menuUserRole" style="font-size: 12px; background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 12px; display: inline-block;">DEV</p>
+                        <p id="menuUserRole"
+                            style="font-size: 12px; background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 12px; display: inline-block;">
+                            DEV</p>
                     </div>
                 </div>
             </div>
-            
+
             <div class="menu-content">
                 <button class="menu-item" onclick="showUserProfile()">
                     <i class="fas fa-user-circle"></i> Meu Perfil
@@ -793,11 +833,12 @@
                 <button class="menu-item" onclick="showHelp()">
                     <i class="fas fa-question-circle"></i> Ajuda
                 </button>
-                
-                <div style="margin: 20px 0; padding: 0 15px; font-size: 12px; color: var(--gray-color); text-transform: uppercase;">
+
+                <div
+                    style="margin: 20px 0; padding: 0 15px; font-size: 12px; color: var(--gray-color); text-transform: uppercase;">
                     Administração
                 </div>
-                
+
                 <button class="menu-item" onclick="manageUsers()">
                     <i class="fas fa-users"></i> Gerenciar Usuários
                 </button>
@@ -808,46 +849,48 @@
                     <i class="fas fa-database"></i> Backup de Dados
                 </button>
             </div>
-            
+
             <div class="menu-footer">
                 <button class="menu-item logout" onclick="logout()">
                     <i class="fas fa-sign-out-alt"></i> Sair do Sistema
                 </button>
             </div>
         </div>
-        
+
         <!-- Modal para Detalhes do Item -->
         <div id="itemModal" class="modal-overlay">
             <div class="modal-content">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <h3 style="font-size: 18px;" id="modalTitle">Detalhes do Item</h3>
-                    <button id="closeModalBtn" style="background: none; border: none; font-size: 20px; color: var(--gray-color);">
+                    <button id="closeModalBtn"
+                        style="background: none; border: none; font-size: 20px; color: var(--gray-color);">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
-                
+
                 <div id="modalBody">
                     <!-- Conteúdo do modal será carregado aqui -->
                 </div>
             </div>
         </div>
-        
+
         <!-- Modal QR Code -->
         <div id="qrModal" class="modal-overlay">
             <div class="modal-content">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <h3 style="font-size: 18px;">QR Code do Item</h3>
-                    <button id="closeQRModalBtn" style="background: none; border: none; font-size: 20px; color: var(--gray-color);">
+                    <button id="closeQRModalBtn"
+                        style="background: none; border: none; font-size: 20px; color: var(--gray-color);">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
-                
+
                 <div id="qrModalBody" style="text-align: center;">
                     <!-- QR Code será gerado aqui -->
                 </div>
             </div>
         </div>
-        
+
         <!-- Notification Toast -->
         <div id="notification" class="notification">
             <div id="notificationContent"></div>
@@ -892,27 +935,27 @@
             if (closeModalBtn) {
                 closeModalBtn.addEventListener('click', closeItemModal);
             }
-            
+
             // Fechar modal QR Code
             const closeQRModalBtn = document.getElementById('closeQRModalBtn');
             if (closeQRModalBtn) {
                 closeQRModalBtn.addEventListener('click', closeQRModal);
             }
-            
+
             // Fechar modais clicando fora do conteúdo
             const itemModal = document.getElementById('itemModal');
             const qrModal = document.getElementById('qrModal');
-            
+
             if (itemModal) {
-                itemModal.addEventListener('click', function(e) {
+                itemModal.addEventListener('click', function (e) {
                     if (e.target === this) {
                         closeItemModal();
                     }
                 });
             }
-            
+
             if (qrModal) {
-                qrModal.addEventListener('click', function(e) {
+                qrModal.addEventListener('click', function (e) {
                     if (e.target === this) {
                         closeQRModal();
                     }
@@ -931,16 +974,16 @@
         // ============================================
         // FUNÇÕES PRINCIPAIS
         // ============================================
-        
+
         // FUNÇÃO: Atualizar estatísticas de status
         function updateStatusStats() {
             const statsElement = document.getElementById('statusStats');
-            
+
             if (tools.length === 0) {
                 statsElement.innerHTML = '<p style="text-align: center; color: var(--gray-color); padding: 20px;">Nenhum item cadastrado</p>';
                 return;
             }
-            
+
             // Contar status
             const stats = {
                 'Disponível': 0,
@@ -949,7 +992,7 @@
                 'Danificado': 0,
                 'Outro': 0
             };
-            
+
             tools.forEach(tool => {
                 if (stats[tool.status] !== undefined) {
                     stats[tool.status]++;
@@ -957,16 +1000,16 @@
                     stats['Outro']++;
                 }
             });
-            
+
             // Gerar HTML
             let html = '';
             const total = tools.length;
-            
+
             for (const [status, count] of Object.entries(stats)) {
                 if (count > 0) {
                     const percent = Math.round((count / total) * 100);
                     const color = getStatusColor(status);
-                    
+
                     html += `
                         <div style="margin-bottom: 12px;">
                             <div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 14px;">
@@ -980,7 +1023,7 @@
                     `;
                 }
             }
-            
+
             statsElement.innerHTML = html;
         }
 
@@ -988,18 +1031,18 @@
         function updateRecentItems() {
             const recentElement = document.getElementById('recentItems');
             const recent = tools.slice(0, 5); // Primeiros 5 itens (mais recentes)
-            
+
             if (recent.length === 0) {
                 recentElement.innerHTML = '<p style="text-align: center; color: var(--gray-color);">Nenhum item recente</p>';
                 return;
             }
-            
+
             let html = '';
             recent.forEach(tool => {
-                const thumbnailHTML = tool.image ? 
+                const thumbnailHTML = tool.image ?
                     `<img src="${tool.image}" alt="${tool.name}" style="width:40px;height:40px;border-radius:8px;object-fit:cover;" onerror="this.parentElement.innerHTML='<i class=\'fas fa-tools\'></i>'">` :
                     `<i class="fas fa-tools"></i>`;
-                
+
                 html += `
                     <div style="display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid #f0f0f0;">
                         <div class="thumbnail" style="width: 40px; height: 40px; margin-right: 12px;">
@@ -1015,7 +1058,7 @@
                     </div>
                 `;
             });
-            
+
             recentElement.innerHTML = html;
         }
 
@@ -1024,11 +1067,11 @@
             const lastSync = localStorage.getItem('lastSync');
             const totalItems = localStorage.getItem('totalItems') || '?';
             const syncInfo = document.getElementById('syncInfo');
-            
+
             if (syncInfo) {
                 if (lastSync) {
                     const date = new Date(lastSync);
-                    syncInfo.textContent = 
+                    syncInfo.textContent =
                         `Última: ${date.toLocaleDateString()} ${date.toLocaleTimeString()} | Total: ${totalItems} itens`;
                 } else {
                     syncInfo.textContent = 'Última sincronização: Nunca';
@@ -1122,7 +1165,7 @@
                     </p>
                 </div>
             `;
-            
+
             // Adicionar eventos aos botões
             document.getElementById('salvarItemBtn').addEventListener('click', saveNewItem);
             document.getElementById('limparFormBtn').addEventListener('click', clearCadastroForm);
@@ -1132,12 +1175,12 @@
         async function saveNewItem() {
             const nome = document.getElementById('cadastroNome').value.trim();
             const codigo = document.getElementById('cadastroCodigo').value.trim();
-            
+
             if (!nome || !codigo) {
                 showNotification('Preencha nome e código!', 'error');
                 return;
             }
-            
+
             const novoItem = {
                 id: Date.now(),
                 name: nome,
@@ -1154,28 +1197,28 @@
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString()
             };
-            
+
             try {
                 // Adicionar localmente
                 tools.unshift(novoItem);
-                
+
                 // Salvar no IndexedDB
                 await saveToIndexedDB(tools);
-                
+
                 // Salvar no Supabase se conectado
                 if (supabaseClient) {
                     await saveItemToSupabase(novoItem);
                 }
-                
+
                 showNotification('Item cadastrado com sucesso!', 'success');
                 clearCadastroForm();
-                
+
                 // Atualizar interface
                 updateUI();
-                
+
                 // Voltar para dashboard
                 switchTab('dashboard');
-                
+
             } catch (error) {
                 console.error('Erro ao salvar:', error);
                 showNotification('Erro ao salvar item', 'error');
@@ -1214,13 +1257,13 @@
                     data_cadastro: item.dataCadastro,
                     updated_at: new Date().toISOString()
                 };
-                
+
                 const { error } = await supabaseClient
                     .from('tools')
                     .insert([itemData]);
-                
+
                 if (error) throw error;
-                
+
                 return true;
             } catch (error) {
                 console.error('Erro ao salvar no Supabase:', error);
@@ -1234,7 +1277,7 @@
         async function startScanner() {
             try {
                 showNotification('Iniciando scanner...', 'info');
-                
+
                 // Verificar permissão de câmera
                 if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
                     showNotification('Câmera não disponível neste dispositivo', 'error');
@@ -1242,12 +1285,12 @@
                 }
 
                 // Solicitar acesso à câmera traseira
-                videoStream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { 
+                videoStream = await navigator.mediaDevices.getUserMedia({
+                    video: {
                         facingMode: 'environment',
                         width: { ideal: 1280 },
                         height: { ideal: 720 }
-                    } 
+                    }
                 });
 
                 // Criar elemento de vídeo
@@ -1277,7 +1320,7 @@
 
                 // Configurar vídeo
                 video.srcObject = videoStream;
-                
+
                 // Aguardar o vídeo carregar
                 await new Promise((resolve, reject) => {
                     video.onloadedmetadata = () => {
@@ -1291,17 +1334,17 @@
                 document.getElementById('startScannerBtn').style.display = 'none';
                 document.getElementById('stopScannerBtn').style.display = 'block';
                 document.getElementById('scannerResult').style.display = 'none';
-                
+
                 scannerActive = true;
-                
+
                 // Iniciar loop de escaneamento
                 startScanningLoop(video);
-                
+
                 showNotification('Scanner ativo. Aponte para um QR Code.', 'success');
-                
+
             } catch (error) {
                 console.error('Erro ao iniciar scanner:', error);
-                
+
                 if (error.name === 'NotAllowedError') {
                     showNotification('Permissão da câmera negada', 'error');
                 } else if (error.name === 'NotFoundError') {
@@ -1309,7 +1352,7 @@
                 } else {
                     showNotification(`Erro: ${error.message}`, 'error');
                 }
-                
+
                 resetScannerUI();
             }
         }
@@ -1317,34 +1360,36 @@
         function startScanningLoop(video) {
             const canvas = document.getElementById('qr-canvas');
             const context = canvas.getContext('2d');
-            
+
             // Limpar qualquer intervalo anterior
             if (scanningInterval) {
                 clearInterval(scanningInterval);
             }
-            
-            // Configurar tamanho do canvas
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            
+
             // Função de escaneamento
             scanningInterval = setInterval(() => {
                 if (!scannerActive || !video.readyState === video.HAVE_ENOUGH_DATA) {
                     return;
                 }
-                
+
+                // Configurar tamanho do canvas baseado no vídeo
+                if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                }
+
                 // Desenhar o frame do vídeo no canvas
                 context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                
+
                 // Obter dados da imagem
                 const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-                
+
                 // Tentar decodificar QR Code
                 try {
                     const code = jsQR(imageData.data, imageData.width, imageData.height, {
                         inversionAttempts: "dontInvert",
                     });
-                    
+
                     if (code) {
                         handleQRCodeDetected(code.data);
                     }
@@ -1361,30 +1406,30 @@
                 try {
                     parsedData = JSON.parse(data);
                     currentScannedData = parsedData;
-                    
+
                     // Mostrar resultado formatado
                     showScannerResult(parsedData);
-                    
+
                     // Parar scanner temporariamente
                     stopScanningTemporarily();
-                    
+
                     // Verificar se o item existe localmente
-                    const itemExists = tools.some(tool => 
-                        tool.id == parsedData.id || 
+                    const itemExists = tools.some(tool =>
+                        tool.id == parsedData.id ||
                         tool.code === parsedData.codigo
                     );
-                    
+
                     if (itemExists) {
                         document.getElementById('viewScannedItemBtn').style.display = 'block';
                     }
-                    
+
                 } catch (jsonError) {
                     // Se não for JSON, mostrar texto puro
                     currentScannedData = { texto: data };
                     showScannerResult({ texto: data, formato: 'Texto' });
                     stopScanningTemporarily();
                 }
-                
+
             } catch (error) {
                 console.error('Erro ao processar QR Code:', error);
                 showNotification('Erro ao processar QR Code', 'error');
@@ -1394,9 +1439,9 @@
         function showScannerResult(data) {
             const resultContainer = document.getElementById('scannerResult');
             const dataContainer = document.getElementById('scannedData');
-            
+
             let html = '';
-            
+
             if (data.id) {
                 // É um item do sistema
                 html = `
@@ -1422,13 +1467,13 @@
                     </div>
                 `;
             }
-            
+
             dataContainer.innerHTML = html;
             resultContainer.style.display = 'block';
-            
+
             // Scroll para o resultado
             resultContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            
+
             // Beep sonoro
             playScanSound();
         }
@@ -1438,16 +1483,16 @@
                 const audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 const oscillator = audioContext.createOscillator();
                 const gainNode = audioContext.createGain();
-                
+
                 oscillator.connect(gainNode);
                 gainNode.connect(audioContext.destination);
-                
+
                 oscillator.frequency.value = 800;
                 oscillator.type = 'sine';
-                
+
                 gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
                 gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
-                
+
                 oscillator.start(audioContext.currentTime);
                 oscillator.stop(audioContext.currentTime + 0.1);
             } catch (e) {
@@ -1457,19 +1502,19 @@
 
         function stopScanningTemporarily() {
             scannerActive = false;
-            
+
             if (scanningInterval) {
                 clearInterval(scanningInterval);
                 scanningInterval = null;
             }
-            
+
             showNotification('QR Code detectado!', 'success');
-            
-            document.getElementById('scanAgainBtn').onclick = function() {
+
+            document.getElementById('scanAgainBtn').onclick = function () {
                 resumeScanner();
             };
-            
-            document.getElementById('viewScannedItemBtn').onclick = function() {
+
+            document.getElementById('viewScannedItemBtn').onclick = function () {
                 if (currentScannedData && currentScannedData.id) {
                     showToolFromQR(currentScannedData.id);
                 }
@@ -1479,30 +1524,30 @@
         function resumeScanner() {
             scannerActive = true;
             document.getElementById('scannerResult').style.display = 'none';
-            
+
             const video = document.getElementById('scanner-video');
             if (video) {
                 startScanningLoop(video);
             }
-            
+
             showNotification('Scanner reiniciado. Continue escaneando.', 'info');
         }
 
         function stopScanner() {
             scannerActive = false;
-            
+
             if (scanningInterval) {
                 clearInterval(scanningInterval);
                 scanningInterval = null;
             }
-            
+
             if (videoStream) {
                 videoStream.getTracks().forEach(track => track.stop());
                 videoStream = null;
             }
-            
+
             resetScannerUI();
-            
+
             showNotification('Scanner parado', 'warning');
         }
 
@@ -1515,7 +1560,7 @@
                     Toque para ativar a câmera
                 </p>
             `;
-            
+
             document.getElementById('startScannerBtn').style.display = 'block';
             document.getElementById('stopScannerBtn').style.display = 'none';
             document.getElementById('scannerResult').style.display = 'none';
@@ -1523,7 +1568,7 @@
 
         function showToolFromQR(toolId) {
             const tool = tools.find(t => t.id == toolId || t.code === toolId);
-            
+
             if (tool) {
                 stopScanner();
                 showToolDetails(tool.id ? tool.id : tool.code);
@@ -1561,12 +1606,12 @@
 
                 request.onupgradeneeded = (event) => {
                     const db = event.target.result;
-                    
+
                     if (!db.objectStoreNames.contains(STORE_NAME)) {
-                        const store = db.createObjectStore(STORE_NAME, { 
+                        const store = db.createObjectStore(STORE_NAME, {
                             keyPath: 'id'
                         });
-                        
+
                         store.createIndex('code', 'code', { unique: true });
                         store.createIndex('category', 'category', { unique: false });
                         store.createIndex('status', 'status', { unique: false });
@@ -1585,46 +1630,46 @@
                     showNotification('Não conectado à nuvem', 'warning');
                     return { success: false, count: 0, total: 0 };
                 }
-                
+
                 showLoader(true);
                 showNotification('Buscando todos os itens...', 'warning');
-                
+
                 const { count, error: countError } = await supabaseClient
                     .from('tools')
                     .select('*', { count: 'exact', head: true });
-                
+
                 if (countError) throw countError;
-                
+
                 totalToolsInDB = count || 0;
                 console.log(`📊 Total de itens: ${totalToolsInDB}`);
-                
+
                 if (totalToolsInDB === 0) {
                     showNotification('Nenhum item encontrado', 'warning');
                     return { success: false, count: 0, total: 0 };
                 }
-                
+
                 const BATCH_SIZE = 1000;
                 let allTools = [];
                 let currentPage = 0;
-                
+
                 while (allTools.length < totalToolsInDB) {
                     const { data, error } = await supabaseClient
                         .from('tools')
                         .select('*')
                         .range(currentPage * BATCH_SIZE, (currentPage * BATCH_SIZE) + BATCH_SIZE - 1)
                         .order('id', { ascending: true });
-                    
+
                     if (error) throw error;
-                    
+
                     if (data && data.length > 0) {
                         allTools = [...allTools, ...data];
                         console.log(`📦 Página ${currentPage + 1}: ${data.length} itens`);
-                        
+
                         const progress = Math.round((allTools.length / totalToolsInDB) * 100);
                         showNotification(`Progresso: ${progress}%`, 'info');
-                        
+
                         currentPage++;
-                        
+
                         if (allTools.length < totalToolsInDB) {
                             await new Promise(resolve => setTimeout(resolve, 300));
                         }
@@ -1632,9 +1677,9 @@
                         break;
                     }
                 }
-                
+
                 console.log(`✅ Total recebido: ${allTools.length} itens`);
-                
+
                 const convertedTools = allTools.map(item => ({
                     id: item.id,
                     name: item.name,
@@ -1659,25 +1704,25 @@
                     createdAt: item.created_at,
                     updatedAt: item.updated_at
                 }));
-                
+
                 await saveToIndexedDB(convertedTools);
-                
+
                 tools = await loadFromIndexedDB(100);
-                
+
                 updateUI();
-                
+
                 localStorage.setItem('lastSync', new Date().toISOString());
                 localStorage.setItem('totalItems', totalToolsInDB.toString());
-                
+
                 showNotification(`✅ ${allTools.length} itens sincronizados!`, 'success');
                 updateSyncInfo();
-                
-                return { 
-                    success: true, 
-                    count: allTools.length, 
-                    total: totalToolsInDB 
+
+                return {
+                    success: true,
+                    count: allTools.length,
+                    total: totalToolsInDB
                 };
-                
+
             } catch (error) {
                 console.error('❌ Erro ao sincronizar:', error);
                 showNotification(`Erro: ${error.message}`, 'error');
@@ -1696,33 +1741,33 @@
 
                 const transaction = db.transaction([STORE_NAME], 'readwrite');
                 const store = transaction.objectStore(STORE_NAME);
-                
+
                 const clearRequest = store.clear();
-                
+
                 clearRequest.onsuccess = () => {
                     let successCount = 0;
-                    
+
                     const insertNext = (index) => {
                         if (index >= data.length) {
                             console.log(`✅ ${successCount} itens salvos`);
                             resolve(successCount);
                             return;
                         }
-                        
+
                         const item = data[index];
                         const request = store.add(item);
-                        
+
                         request.onsuccess = () => {
                             successCount++;
                             insertNext(index + 1);
                         };
-                        
+
                         request.onerror = () => {
                             console.error(`❌ Erro ao salvar item ${index}`);
                             insertNext(index + 1);
                         };
                     };
-                    
+
                     insertNext(0);
                 };
             });
@@ -1738,14 +1783,14 @@
                 const transaction = db.transaction([STORE_NAME], 'readonly');
                 const store = transaction.objectStore(STORE_NAME);
                 const index = store.index('updatedAt');
-                
+
                 const request = index.openCursor(null, 'prev');
                 const results = [];
                 let count = 0;
 
                 request.onsuccess = (event) => {
                     const cursor = event.target.result;
-                    
+
                     if (cursor && count < limit) {
                         results.push(cursor.value);
                         count++;
@@ -1763,25 +1808,25 @@
         function updateUI() {
             // Buscar total salvo
             const totalInDB = localStorage.getItem('totalItems') || tools.length;
-            
+
             // Atualizar contagem
             document.getElementById('totalItems').textContent = `${tools.length}/${totalInDB}`;
             document.getElementById('toolsCount').textContent = `${tools.length} de ${totalInDB} itens carregados`;
-            
+
             // Atualizar valor total
             const totalValue = tools.reduce((sum, tool) => {
                 const preco = parseFloat(tool.preco) || 0;
                 const quantidade = parseInt(tool.quantidade) || 1;
                 return sum + (preco * quantidade);
             }, 0);
-            
-            document.getElementById('totalValue').textContent = 
+
+            document.getElementById('totalValue').textContent =
                 `R$ ${totalValue.toFixed(2).replace('.', ',')}`;
-            
+
             // Atualizar estatísticas
             updateStatusStats();
             updateRecentItems();
-            
+
             // Atualizar lista se estiver na tab certa
             if (currentTab === 'catalogo') {
                 updateToolsList();
@@ -1790,34 +1835,34 @@
 
         function updateToolsList() {
             const listElement = document.getElementById('toolsList');
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            
+            const searchTerm = document.getElementById('searchInput') ? document.getElementById('searchInput').value.toLowerCase() : '';
+
             // Carregar mais dados
             if (loadedToolsCount === 0 || loadedToolsCount < tools.length) {
                 loadedToolsCount = Math.min(tools.length, loadedToolsCount + 50);
             }
-            
+
             let filteredTools = tools.slice(0, loadedToolsCount);
-            
+
             if (searchTerm) {
-                filteredTools = filteredTools.filter(tool => 
+                filteredTools = filteredTools.filter(tool =>
                     tool.name.toLowerCase().includes(searchTerm) ||
                     tool.code.toLowerCase().includes(searchTerm) ||
                     (tool.patrimonio && tool.patrimonio.toLowerCase().includes(searchTerm))
                 );
             }
-            
+
             if (filteredTools.length === 0) {
                 listElement.innerHTML = '<p style="text-align: center; color: var(--gray-color); padding: 40px;">Nenhum item encontrado</p>';
                 return;
             }
-            
+
             let html = '';
             filteredTools.forEach(tool => {
-                const thumbnailHTML = tool.image ? 
+                const thumbnailHTML = tool.image ?
                     `<img src="${tool.image}" alt="${tool.name}" onerror="this.parentElement.innerHTML='<i class=\'fas fa-tools\'></i>'">` :
                     `<i class="fas fa-tools"></i>`;
-                
+
                 html += `
                     <div class="card" style="margin-bottom: 10px; padding: 15px;" data-id="${tool.id}">
                         <div style="display: flex; align-items: start; margin-bottom: 10px;">
@@ -1847,29 +1892,29 @@
                     </div>
                 `;
             });
-            
+
             listElement.innerHTML = html;
-            
+
             // Adicionar eventos aos botões
             document.querySelectorAll('.action-btn.view').forEach(btn => {
-                btn.addEventListener('click', function(e) {
+                btn.addEventListener('click', function (e) {
                     e.stopPropagation();
                     const toolId = this.getAttribute('data-id');
                     showToolDetails(toolId);
                 });
             });
-            
+
             document.querySelectorAll('.action-btn.qr').forEach(btn => {
-                btn.addEventListener('click', function(e) {
+                btn.addEventListener('click', function (e) {
                     e.stopPropagation();
                     const toolId = this.getAttribute('data-id');
                     generateQRCode(toolId);
                 });
             });
-            
+
             // Clique no card inteiro também abre detalhes
             document.querySelectorAll('.card[data-id]').forEach(card => {
-                card.addEventListener('click', function(e) {
+                card.addEventListener('click', function (e) {
                     if (!e.target.closest('.action-btn')) {
                         const toolId = this.getAttribute('data-id');
                         showToolDetails(toolId);
@@ -1881,8 +1926,8 @@
         function showToolDetails(toolId) {
             const tool = tools.find(t => t.id == toolId);
             if (!tool) return;
-            
-            const imageHTML = tool.image ? 
+
+            const imageHTML = tool.image ?
                 `<div class="image-preview">
                     <img src="${tool.image}" alt="${tool.name}" onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\'fas fa-tools\' style=\'font-size:60px; color:#ccc;\'></i><p>Sem imagem</p>'">
                 </div>` :
@@ -1890,7 +1935,7 @@
                     <i class="fas fa-tools" style="font-size: 60px; color: #ccc;"></i>
                     <p style="margin-top: 10px; color: var(--gray-color);">Sem imagem</p>
                 </div>`;
-            
+
             document.getElementById('modalTitle').textContent = tool.name;
             document.getElementById('modalBody').innerHTML = `
                 ${imageHTML}
@@ -1929,24 +1974,24 @@
                     </button>
                 </div>
             `;
-            
+
             // Mostrar modal
             document.getElementById('itemModal').style.display = 'flex';
-            
+
             // Eventos do modal
-            document.getElementById('modalQRBtn').addEventListener('click', function() {
+            document.getElementById('modalQRBtn').addEventListener('click', function () {
                 const id = this.getAttribute('data-id');
                 closeItemModal();
                 generateQRCode(id);
             });
-            
+
             document.getElementById('modalCloseBtn').addEventListener('click', closeItemModal);
         }
 
         function generateQRCode(toolId) {
             const tool = tools.find(t => t.id == toolId);
             if (!tool) return;
-            
+
             const qrContent = JSON.stringify({
                 id: tool.id,
                 nome: tool.name,
@@ -1956,7 +2001,7 @@
                 status: tool.status,
                 localizacao: tool.location
             }, null, 2);
-            
+
             document.getElementById('qrModalBody').innerHTML = `
                 <div style="margin-bottom: 20px;">
                     <h4>${tool.name}</h4>
@@ -1972,19 +2017,19 @@
                     </button>
                 </div>
             `;
-            
+
             // Gerar QR Code
             QRCode.toCanvas(document.getElementById('qrcodeCanvas'), qrContent, {
                 width: 200,
                 margin: 2,
                 color: { dark: '#000000', light: '#FFFFFF' }
             });
-            
+
             // Mostrar modal
             document.getElementById('qrModal').style.display = 'flex';
-            
+
             // Eventos
-            document.getElementById('downloadQRBtn').addEventListener('click', function() {
+            document.getElementById('downloadQRBtn').addEventListener('click', function () {
                 const canvas = document.querySelector('#qrcodeCanvas canvas');
                 if (canvas) {
                     const link = document.createElement('a');
@@ -1993,7 +2038,7 @@
                     link.click();
                 }
             });
-            
+
             document.getElementById('closeQRBtn').addEventListener('click', closeQRModal);
         }
 
@@ -2003,7 +2048,7 @@
         function handleLogin() {
             const email = document.getElementById('loginEmail').value.trim();
             const password = document.getElementById('loginPassword').value;
-            
+
             // Dados de usuários
             const users = {
                 'fabio@fwcompany.com.br': {
@@ -2031,7 +2076,7 @@
                     email: 'raquel@fwcompany.com.br'
                 }
             };
-            
+
             if (users[email] && users[email].password === password) {
                 currentUser = users[email];
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
@@ -2045,14 +2090,15 @@
         function showDashboard() {
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('mobileDashboard').style.display = 'flex';
-            
+
             if (currentUser) {
                 const userBadge = document.getElementById('userBadge');
                 if (userBadge) {
-                    userBadge.textContent = 
-                        currentUser.role === 'dev' ? 'DEV' : 
-                        currentUser.role === 'admin' ? 'ADMIN' : 
-                        currentUser.role === 'supervisor' ? 'SUPERVISOR' : 'OPERADOR';
+                    userBadge.textContent =
+                        currentUser.role === 'dev' ? 'DEV' :
+                            currentUser.role === 'almoxarife' ? 'ALMOXARIFE' :
+                                currentUser.role === 'admin' ? 'ADMIN' :
+                                    currentUser.role === 'supervisor' ? 'SUPERVISOR' : 'OPERADOR';
                 }
             }
         }
@@ -2060,14 +2106,15 @@
         function openMenu() {
             document.getElementById('mobileSidebar').classList.add('open');
             document.getElementById('menuOverlay').style.display = 'block';
-            
+
             if (currentUser) {
                 document.getElementById('menuUserName').textContent = currentUser.name;
                 document.getElementById('menuUserEmail').textContent = currentUser.email;
-                document.getElementById('menuUserRole').textContent = 
-                    currentUser.role === 'dev' ? 'DEV' : 
-                    currentUser.role === 'admin' ? 'ADMIN' : 
-                    currentUser.role === 'supervisor' ? 'SUPERVISOR' : 'OPERADOR';
+                document.getElementById('menuUserRole').textContent =
+                    currentUser.role === 'dev' ? 'DEV' :
+                        currentUser.role === 'almoxarife' ? 'ALMOXARIFE' :
+                            currentUser.role === 'admin' ? 'ADMIN' :
+                                currentUser.role === 'supervisor' ? 'SUPERVISOR' : 'OPERADOR';
             }
         }
 
@@ -2081,18 +2128,18 @@
                 if (scannerActive) {
                     stopScanner();
                 }
-                
+
                 localStorage.removeItem('currentUser');
                 currentUser = null;
-                
+
                 closeMenu();
-                
+
                 document.getElementById('mobileDashboard').style.display = 'none';
                 document.getElementById('loginScreen').style.display = 'flex';
-                
+
                 document.getElementById('loginEmail').value = '';
                 document.getElementById('loginPassword').value = '';
-                
+
                 showNotification('Logout realizado com sucesso', 'success');
             }
         }
@@ -2101,7 +2148,7 @@
         // FUNÇÕES AUXILIARES
         // ============================================
         function getStatusColor(status) {
-            switch(status) {
+            switch (status) {
                 case 'Disponível': return '#27ae60';
                 case 'Em Uso': return '#3498db';
                 case 'Manutenção': return '#f39c12';
@@ -2113,17 +2160,17 @@
         async function connectToSupabase() {
             try {
                 supabaseClient = supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.key);
-                
+
                 const { data, error } = await supabaseClient
                     .from('tools')
                     .select('count')
                     .limit(1);
-                
+
                 if (error) throw error;
-                
+
                 updateConnectionStatus(true);
                 return true;
-                
+
             } catch (error) {
                 console.error('❌ Erro ao conectar:', error);
                 updateConnectionStatus(false);
@@ -2134,7 +2181,7 @@
         function updateConnectionStatus(connected) {
             const statusElement = document.getElementById('connectionStatus');
             const syncElement = document.getElementById('syncStatus');
-            
+
             if (connected) {
                 statusElement.textContent = 'Online';
                 statusElement.style.background = 'rgba(39,174,96,0.2)';
@@ -2158,11 +2205,11 @@
         function showNotification(message, type = 'info') {
             const notification = document.getElementById('notification');
             const content = document.getElementById('notificationContent');
-            
+
             if (notification && content) {
                 content.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i> ${message}`;
                 notification.className = `notification ${type} show`;
-                
+
                 setTimeout(() => {
                     notification.classList.remove('show');
                 }, 3000);
@@ -2203,7 +2250,7 @@
         // ============================================
         // EVENT LISTENERS E INICIALIZAÇÃO
         // ============================================
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             console.log('DOM carregado');
             setupEventListeners();
             checkSession();
@@ -2211,43 +2258,43 @@
 
         function setupEventListeners() {
             console.log('Configurando eventos...');
-            
+
             // Login
             const loginBtn = document.getElementById('loginBtn');
             if (loginBtn) {
                 loginBtn.addEventListener('click', handleLogin);
             }
-            
+
             // Menu
             const menuBtn = document.getElementById('menuBtn');
             if (menuBtn) {
                 menuBtn.addEventListener('click', openMenu);
             }
-            
+
             const menuOverlay = document.getElementById('menuOverlay');
             if (menuOverlay) {
                 menuOverlay.addEventListener('click', closeMenu);
             }
-            
+
             // Scanner
             const startScannerBtn = document.getElementById('startScannerBtn');
             if (startScannerBtn) {
                 startScannerBtn.addEventListener('click', startScanner);
             }
-            
+
             const stopScannerBtn = document.getElementById('stopScannerBtn');
             if (stopScannerBtn) {
                 stopScannerBtn.addEventListener('click', stopScanner);
             }
-            
+
             // Tabs
             document.querySelectorAll('.tab-button').forEach(btn => {
-                btn.addEventListener('click', function() {
+                btn.addEventListener('click', function () {
                     const tab = this.getAttribute('data-tab');
                     switchTab(tab);
                 });
             });
-            
+
             // Botões principais
             const syncNowBtn = document.getElementById('syncNowBtn');
             if (syncNowBtn) {
@@ -2255,7 +2302,7 @@
                     await fetchAllFromSupabase();
                 });
             }
-            
+
             const syncAllBtn = document.getElementById('syncAllBtn');
             if (syncAllBtn) {
                 syncAllBtn.addEventListener('click', async () => {
@@ -2264,14 +2311,14 @@
                     }
                 });
             }
-            
+
             const syncUpdatesBtn = document.getElementById('syncUpdatesBtn');
             if (syncUpdatesBtn) {
                 syncUpdatesBtn.addEventListener('click', async () => {
                     showNotification('Funcionalidade em desenvolvimento', 'info');
                 });
             }
-            
+
             const clearCacheBtn = document.getElementById('clearCacheBtn');
             if (clearCacheBtn) {
                 clearCacheBtn.addEventListener('click', async () => {
@@ -2287,21 +2334,21 @@
                     }
                 });
             }
-            
+
             const addItemBtn = document.getElementById('addItemBtn');
             if (addItemBtn) {
                 addItemBtn.addEventListener('click', () => {
                     switchTab('cadastro');
                 });
             }
-            
+
             const viewAllBtn = document.getElementById('viewAllBtn');
             if (viewAllBtn) {
                 viewAllBtn.addEventListener('click', () => {
                     switchTab('catalogo');
                 });
             }
-            
+
             const loadMoreBtn = document.getElementById('loadMoreBtn');
             if (loadMoreBtn) {
                 loadMoreBtn.addEventListener('click', () => {
@@ -2309,16 +2356,16 @@
                     updateToolsList();
                 });
             }
-            
+
             // Configurar eventos dos modais
             setupModalEvents();
-            
+
             // Network
             window.addEventListener('online', () => {
                 isOnline = true;
                 updateConnectionStatus(true);
             });
-            
+
             window.addEventListener('offline', () => {
                 isOnline = false;
                 updateConnectionStatus(false);
@@ -2327,23 +2374,23 @@
 
         function switchTab(tab) {
             currentTab = tab;
-            
+
             // Parar scanner se estiver ativo e mudando de aba
             if (scannerActive && tab !== 'scanner') {
                 stopScanner();
             }
-            
+
             // Atualizar tabs ativas
             document.querySelectorAll('.tab-button').forEach(btn => {
                 btn.classList.toggle('active', btn.getAttribute('data-tab') === tab);
             });
-            
+
             // Ocultar todos os conteúdos
             document.querySelectorAll('.tab-content').forEach(div => {
                 div.style.display = 'none';
             });
-            
-            switch(tab) {
+
+            switch (tab) {
                 case 'dashboard':
                     document.getElementById('tabDashboard').style.display = 'block';
                     updateUI();
@@ -2381,24 +2428,24 @@
 
         async function initializeSystem() {
             console.log('🔧 Inicializando sistema...');
-            
+
             try {
                 await initIndexedDB();
                 tools = await loadFromIndexedDB(100);
                 console.log(`📁 ${tools.length} itens carregados`);
-                
+
                 await connectToSupabase();
-                
+
                 updateUI();
                 updateSyncInfo();
-                
+
                 if (isOnline && supabaseClient && tools.length < 10) {
                     console.log('🔄 Sincronização automática');
                     setTimeout(async () => {
                         await fetchAllFromSupabase();
                     }, 1500);
                 }
-                
+
             } catch (error) {
                 console.error('❌ Erro na inicialização:', error);
                 showNotification('Erro ao inicializar', 'error');
@@ -2406,4 +2453,5 @@
         }
     </script>
 </body>
+
 </html>
