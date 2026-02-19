@@ -902,11 +902,11 @@
 
     <script>
         // ============================================
-        // CONFIGURAÇÃO SUPABASE
+        // CONFIGURAÇÃO SUPABASE - NOVAS CREDENCIAIS
         // ============================================
         const SUPABASE_CONFIG = {
-            url: 'https://azlgjkjzitbolyfyyaip.supabase.co',
-            key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6bGdqa2p6aXRib2x5Znl5YWlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY0MTQ1NjcsImV4cCI6MjA4MTk5MDU2N30.PefjFNb5Phq2ZkR26-RlJdb-pnFUbYp1PxjYwI1LUpA'
+            url: 'https://eokhafnfmynhridksnuh.supabase.co',
+            key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVva2hhZm5mbXluaHJpZGtzbnVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxMzYwMDIsImV4cCI6MjA4NTcxMjAwMn0.-RZtzUYpdOI4_WKOmP9lqw9guJmvh8XFeAL6UXhA4vo'
         };
 
         // ============================================
@@ -1095,6 +1095,16 @@
                         <input type="text" id="cadastroCodigo" placeholder="Ex: MART-001">
                     </div>
                     
+                    <div class="form-group">
+                        <label for="cadastroPatrimonio">Patrimônio</label>
+                        <input type="text" id="cadastroPatrimonio" placeholder="Nº de patrimônio">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="cadastroNCM">NCM</label>
+                        <input type="text" id="cadastroNCM" placeholder="Código NCM">
+                    </div>
+                    
                     <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px;">
                         <div class="form-group">
                             <label for="cadastroCategoria">Categoria</label>
@@ -1123,9 +1133,35 @@
                         <select id="cadastroLocalizacao">
                             <option value="">Selecione</option>
                             <option value="Almoxarifado Central">Almoxarifado Central</option>
+                            <option value="Container Elétrica">Container Elétrica</option>
                             <option value="Container Mecânica">Container Mecânica</option>
                             <option value="Oficina">Oficina</option>
                             <option value="Campo">Campo</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="cadastroCondicao">Condição</label>
+                        <select id="cadastroCondicao">
+                            <option value="Bom">Bom</option>
+                            <option value="Regular">Regular</option>
+                            <option value="Precisa de Reparo">Precisa de Reparo</option>
+                            <option value="Inutilizável">Inutilizável</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="cadastroNotaFiscal">Nota Fiscal</label>
+                        <input type="text" id="cadastroNotaFiscal" placeholder="Número da nota fiscal">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="cadastroUnidade">Unidade</label>
+                        <select id="cadastroUnidade">
+                            <option value="UN">UN - Unidade</option>
+                            <option value="CX">CX - Caixa</option>
+                            <option value="PCT">PCT - Pacote</option>
+                            <option value="JT">JT - Jogo</option>
                         </select>
                     </div>
                     
@@ -1141,6 +1177,18 @@
                         </div>
                     </div>
                     
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px;">
+                        <div class="form-group">
+                            <label for="cadastroEstoqueMin">Estoque Mínimo</label>
+                            <input type="number" id="cadastroEstoqueMin" value="0" min="0">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="cadastroEstoqueMax">Estoque Máximo</label>
+                            <input type="number" id="cadastroEstoqueMax" value="0" min="0">
+                        </div>
+                    </div>
+                    
                     <div class="form-group">
                         <label for="cadastroImagem">Imagem (URL)</label>
                         <input type="text" id="cadastroImagem" placeholder="URL da imagem ou deixe em branco">
@@ -1149,6 +1197,11 @@
                     <div class="form-group">
                         <label for="cadastroDescricao">Descrição</label>
                         <textarea id="cadastroDescricao" rows="3" placeholder="Descrição detalhada..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="cadastroObservacoes">Observações</label>
+                        <textarea id="cadastroObservacoes" rows="2" placeholder="Observações adicionais..."></textarea>
                     </div>
                     
                     <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 20px;">
@@ -1185,13 +1238,21 @@
                 id: Date.now(),
                 name: nome,
                 code: codigo,
+                patrimonio: document.getElementById('cadastroPatrimonio').value.trim() || null,
+                ncm: document.getElementById('cadastroNCM').value.trim() || '',
                 category: document.getElementById('cadastroCategoria').value || 'Outros',
                 status: document.getElementById('cadastroStatus').value,
                 location: document.getElementById('cadastroLocalizacao').value || 'Almoxarifado Central',
-                quantidade: parseInt(document.getElementById('cadastroQuantidade').value) || 1,
+                condition: document.getElementById('cadastroCondicao').value || 'Bom',
+                notaFiscal: document.getElementById('cadastroNotaFiscal').value.trim() || null,
+                unidade: document.getElementById('cadastroUnidade').value || 'UN',
                 preco: parseFloat(document.getElementById('cadastroPreco').value) || 0,
+                quantidade: parseInt(document.getElementById('cadastroQuantidade').value) || 1,
+                estoqueMinimo: parseInt(document.getElementById('cadastroEstoqueMin').value) || 0,
+                estoqueMaximo: parseInt(document.getElementById('cadastroEstoqueMax').value) || 0,
+                description: document.getElementById('cadastroDescricao').value.trim() || null,
+                observations: document.getElementById('cadastroObservacoes').value.trim() || null,
                 image: document.getElementById('cadastroImagem').value.trim() || null,
-                description: document.getElementById('cadastroDescricao').value.trim(),
                 usuarioCadastro: currentUser ? currentUser.name : 'Mobile User',
                 dataCadastro: new Date().toISOString().split('T')[0],
                 createdAt: new Date().toISOString(),
@@ -1230,13 +1291,21 @@
             if (document.getElementById('cadastroNome')) {
                 document.getElementById('cadastroNome').value = '';
                 document.getElementById('cadastroCodigo').value = '';
+                document.getElementById('cadastroPatrimonio').value = '';
+                document.getElementById('cadastroNCM').value = '';
                 document.getElementById('cadastroCategoria').value = '';
                 document.getElementById('cadastroStatus').value = 'Disponível';
                 document.getElementById('cadastroLocalizacao').value = '';
+                document.getElementById('cadastroCondicao').value = 'Bom';
+                document.getElementById('cadastroNotaFiscal').value = '';
+                document.getElementById('cadastroUnidade').value = 'UN';
                 document.getElementById('cadastroQuantidade').value = '1';
                 document.getElementById('cadastroPreco').value = '';
+                document.getElementById('cadastroEstoqueMin').value = '0';
+                document.getElementById('cadastroEstoqueMax').value = '0';
                 document.getElementById('cadastroImagem').value = '';
                 document.getElementById('cadastroDescricao').value = '';
+                document.getElementById('cadastroObservacoes').value = '';
             }
         }
 
@@ -1246,16 +1315,25 @@
                 const itemData = {
                     name: item.name,
                     code: item.code,
+                    patrimonio: item.patrimonio,
+                    ncm: item.ncm,
                     category: item.category,
                     status: item.status,
                     location: item.location,
-                    quantidade: item.quantidade,
+                    condition: item.condition,
+                    nota_fiscal: item.notaFiscal,
+                    unidade: item.unidade,
                     preco: item.preco,
-                    image_url: item.image,
+                    quantidade: item.quantidade,
+                    estoque_minimo: item.estoqueMinimo,
+                    estoque_maximo: item.estoqueMaximo,
                     description: item.description,
+                    observations: item.observations,
+                    image_url: item.image,
                     usuario_cadastro: item.usuarioCadastro,
                     data_cadastro: item.dataCadastro,
-                    updated_at: new Date().toISOString()
+                    created_at: item.createdAt,
+                    updated_at: item.updatedAt
                 };
 
                 const { error } = await supabaseClient
@@ -1416,7 +1494,8 @@
                     // Verificar se o item existe localmente
                     const itemExists = tools.some(tool =>
                         tool.id == parsedData.id ||
-                        tool.code === parsedData.codigo
+                        tool.code === parsedData.codigo ||
+                        (tool.patrimonio && tool.patrimonio === parsedData.patrimonio)
                     );
 
                     if (itemExists) {
@@ -1451,6 +1530,7 @@
                     <p><strong>Item ID:</strong> ${data.id}</p>
                     <p><strong>Nome:</strong> ${data.nome || 'N/A'}</p>
                     <p><strong>Código:</strong> ${data.codigo || 'N/A'}</p>
+                    <p><strong>Patrimônio:</strong> ${data.patrimonio || 'N/A'}</p>
                     <p><strong>Categoria:</strong> ${data.categoria || 'N/A'}</p>
                     <p><strong>Status:</strong> ${data.status || 'N/A'}</p>
                     <p><strong>Localização:</strong> ${data.localizacao || 'N/A'}</p>
@@ -1622,8 +1702,9 @@
         }
 
         // ============================================
-        // FUNÇÕES DE SINCRONIZAÇÃO
+        // FUNÇÃO DE SINCRONIZAÇÃO CORRIGIDA
         // ============================================
+
         async function fetchAllFromSupabase() {
             try {
                 if (!supabaseClient) {
@@ -1641,7 +1722,7 @@
                 if (countError) throw countError;
 
                 totalToolsInDB = count || 0;
-                console.log(`📊 Total de itens: ${totalToolsInDB}`);
+                console.log(`📊 Total de itens no banco: ${totalToolsInDB}`);
 
                 if (totalToolsInDB === 0) {
                     showNotification('Nenhum item encontrado', 'warning');
@@ -1705,8 +1786,10 @@
                     updatedAt: item.updated_at
                 }));
 
+                // Salvar TODOS os itens no IndexedDB
                 await saveToIndexedDB(convertedTools);
 
+                // Carregar apenas os primeiros 100 para memória (performance)
                 tools = await loadFromIndexedDB(100);
 
                 updateUI();
@@ -1803,17 +1886,23 @@
         }
 
         // ============================================
-        // FUNÇÕES DE INTERFACE
+        // FUNÇÕES DE INTERFACE CORRIGIDAS
         // ============================================
+
         function updateUI() {
-            // Buscar total salvo
-            const totalInDB = localStorage.getItem('totalItems') || tools.length;
+            // Buscar total salvo no banco de dados (nuvem)
+            const totalInDB = localStorage.getItem('totalItems') || '?';
 
-            // Atualizar contagem
+            // tools.length é apenas os itens carregados na memória (máx 100)
+            // totalInDB é o total real no banco de dados
+
+            // Atualizar contagem corretamente
             document.getElementById('totalItems').textContent = `${tools.length}/${totalInDB}`;
-            document.getElementById('toolsCount').textContent = `${tools.length} de ${totalInDB} itens carregados`;
 
-            // Atualizar valor total
+            // O contador do catálogo será atualizado na função updateToolsList
+            // document.getElementById('toolsCount') será atualizado lá
+
+            // Atualizar valor total (baseado nos itens carregados)
             const totalValue = tools.reduce((sum, tool) => {
                 const preco = parseFloat(tool.preco) || 0;
                 const quantidade = parseInt(tool.quantidade) || 1;
@@ -1821,8 +1910,11 @@
             }, 0);
 
             document.getElementById('totalValue').textContent =
-                `R$ ${totalValue.toFixed(2).replace('.', ',')}`;
-
+                new Intl.NumberFormat('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL'
+                }).format(totalValue);
+                
             // Atualizar estatísticas
             updateStatusStats();
             updateRecentItems();
@@ -1835,62 +1927,107 @@
 
         function updateToolsList() {
             const listElement = document.getElementById('toolsList');
-            const searchTerm = document.getElementById('searchInput') ? document.getElementById('searchInput').value.toLowerCase() : '';
+            const searchInput = document.getElementById('searchInput');
+            const loadMoreBtn = document.getElementById('loadMoreBtn');
 
-            // Carregar mais dados
-            if (loadedToolsCount === 0 || loadedToolsCount < tools.length) {
-                loadedToolsCount = Math.min(tools.length, loadedToolsCount + 50);
-            }
+            const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+            const totalInDB = localStorage.getItem('totalItems') || tools.length;
 
-            let filteredTools = tools.slice(0, loadedToolsCount);
-
+            // Se houver termo de busca, filtrar TODOS os itens
             if (searchTerm) {
-                filteredTools = filteredTools.filter(tool =>
-                    tool.name.toLowerCase().includes(searchTerm) ||
-                    tool.code.toLowerCase().includes(searchTerm) ||
-                    (tool.patrimonio && tool.patrimonio.toLowerCase().includes(searchTerm))
+                const filteredTools = tools.filter(tool =>
+                    (tool.name && tool.name.toLowerCase().includes(searchTerm)) ||
+                    (tool.code && tool.code.toLowerCase().includes(searchTerm)) ||
+                    (tool.patrimonio && tool.patrimonio.toLowerCase().includes(searchTerm)) ||
+                    (tool.category && tool.category.toLowerCase().includes(searchTerm)) ||
+                    (tool.location && tool.location.toLowerCase().includes(searchTerm))
                 );
+
+                // Esconder botão "Carregar mais" durante a busca
+                if (loadMoreBtn) {
+                    loadMoreBtn.style.display = 'none';
+                }
+                // Mostrar contagem correta: encontrados / total no banco
+                document.getElementById('toolsCount').textContent =
+                    `${filteredTools.length} de ${totalInDB} itens encontrados`;
+
+                if (filteredTools.length === 0) {
+                    listElement.innerHTML = '<p style="text-align: center; color: var(--gray-color); padding: 40px;">Nenhum item encontrado para "' + searchTerm + '"</p>';
+                    return;
+                }
+
+                // Renderizar itens filtrados
+                renderToolList(filteredTools);
+
+            } else {
+                // Sem busca: mostrar itens paginados
+                if (loadedToolsCount === 0 || loadedToolsCount < tools.length) {
+                    loadedToolsCount = Math.min(tools.length, loadedToolsCount + 50);
+                }
+
+                const displayTools = tools.slice(0, loadedToolsCount);
+
+                // Mostrar/esconder botão "Carregar mais"
+                if (loadMoreBtn) {
+                    loadMoreBtn.style.display = loadedToolsCount < tools.length ? 'inline-block' : 'none';
+                }
+
+                if (displayTools.length === 0) {
+                    listElement.innerHTML = '<p style="text-align: center; color: var(--gray-color); padding: 40px;">Nenhum item cadastrado</p>';
+                    return;
+                }
+
+                renderToolList(displayTools);
             }
 
-            if (filteredTools.length === 0) {
-                listElement.innerHTML = '<p style="text-align: center; color: var(--gray-color); padding: 40px;">Nenhum item encontrado</p>';
-                return;
-            }
+            // Atualizar contagem de itens
+            document.getElementById('toolsCount').textContent =
+                `${searchTerm ? tools.filter(t =>
+                    (t.name && t.name.toLowerCase().includes(searchTerm)) ||
+                    (t.code && t.code.toLowerCase().includes(searchTerm)) ||
+                    (t.patrimonio && t.patrimonio.toLowerCase().includes(searchTerm))
+                ).length : tools.length} de ${tools.length} itens ${searchTerm ? 'encontrados' : 'carregados'}`;
+        }
+
+        // Função auxiliar para renderizar a lista de ferramentas
+        function renderToolList(toolsToRender) {
+            const listElement = document.getElementById('toolsList');
 
             let html = '';
-            filteredTools.forEach(tool => {
+            toolsToRender.forEach(tool => {
                 const thumbnailHTML = tool.image ?
                     `<img src="${tool.image}" alt="${tool.name}" onerror="this.parentElement.innerHTML='<i class=\'fas fa-tools\'></i>'">` :
                     `<i class="fas fa-tools"></i>`;
 
                 html += `
-                    <div class="card" style="margin-bottom: 10px; padding: 15px;" data-id="${tool.id}">
-                        <div style="display: flex; align-items: start; margin-bottom: 10px;">
-                            <div class="thumbnail" style="margin-right: 12px; flex-shrink: 0;">
-                                ${thumbnailHTML}
-                            </div>
-                            <div style="flex: 1;">
-                                <div style="font-weight: 500; font-size: 16px;">${tool.name}</div>
-                                <div style="font-size: 14px; color: var(--gray-color);">${tool.code}${tool.patrimonio ? ' | ' + tool.patrimonio : ''}</div>
-                                <div style="display: flex; align-items: center; gap: 8px; margin-top: 5px;">
-                                    <span style="font-size: 12px; padding: 3px 8px; background: ${getStatusColor(tool.status)}20; color: ${getStatusColor(tool.status)}; border-radius: 12px;">
-                                        ${tool.status}
-                                    </span>
-                                    <span style="font-size: 12px; color: var(--gray-color);">${tool.location}</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="tool-actions">
-                            <button class="action-btn view" data-id="${tool.id}">
-                                <i class="fas fa-eye"></i> Ver
-                            </button>
-                            <button class="action-btn qr" data-id="${tool.id}">
-                                <i class="fas fa-qrcode"></i> QR Code
-                            </button>
+            <div class="card" style="margin-bottom: 10px; padding: 15px;" data-id="${tool.id}">
+                <div style="display: flex; align-items: start; margin-bottom: 10px;">
+                    <div class="thumbnail" style="margin-right: 12px; flex-shrink: 0;">
+                        ${thumbnailHTML}
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 500; font-size: 16px;">${tool.name}</div>
+                        <div style="font-size: 14px; color: var(--gray-color);">${tool.code}${tool.patrimonio ? ' | ' + tool.patrimonio : ''}</div>
+                        <div style="display: flex; align-items: center; gap: 8px; margin-top: 5px; flex-wrap: wrap;">
+                            <span style="font-size: 12px; padding: 3px 8px; background: ${getStatusColor(tool.status)}20; color: ${getStatusColor(tool.status)}; border-radius: 12px;">
+                                ${tool.status}
+                            </span>
+                            <span style="font-size: 12px; color: var(--gray-color);">${tool.location}</span>
+                            <span style="font-size: 12px; color: var(--gray-color);">Qtd: ${tool.quantidade || 1}</span>
                         </div>
                     </div>
-                `;
+                </div>
+                
+                <div class="tool-actions">
+                    <button class="action-btn view" data-id="${tool.id}">
+                        <i class="fas fa-eye"></i> Ver
+                    </button>
+                    <button class="action-btn qr" data-id="${tool.id}">
+                        <i class="fas fa-qrcode"></i> QR Code
+                    </button>
+                </div>
+            </div>
+        `;
             });
 
             listElement.innerHTML = html;
@@ -1943,12 +2080,17 @@
                 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 20px;">
                     <div><strong>Código:</strong><br>${tool.code}</div>
                     <div><strong>Patrimônio:</strong><br>${tool.patrimonio || 'Não informado'}</div>
+                    <div><strong>NCM:</strong><br>${tool.ncm || 'Não informado'}</div>
                     <div><strong>Categoria:</strong><br>${tool.category}</div>
                     <div><strong>Status:</strong><br><span style="color: ${getStatusColor(tool.status)}">${tool.status}</span></div>
                     <div><strong>Localização:</strong><br>${tool.location}</div>
                     <div><strong>Condição:</strong><br>${tool.condition || 'N/A'}</div>
+                    <div><strong>Nota Fiscal:</strong><br>${tool.notaFiscal || 'Não informado'}</div>
+                    <div><strong>Unidade:</strong><br>${tool.unidade || 'UN'}</div>
                     <div><strong>Quantidade:</strong><br>${tool.quantidade || 1}</div>
                     <div><strong>Preço:</strong><br>R$ ${parseFloat(tool.preco || 0).toFixed(2).replace('.', ',')}</div>
+                    <div><strong>Estoque Mín:</strong><br>${tool.estoqueMinimo || 0}</div>
+                    <div><strong>Estoque Máx:</strong><br>${tool.estoqueMaximo || 0}</div>
                 </div>
                 
                 ${tool.description ? `
@@ -1964,6 +2106,10 @@
                         <p style="margin-top: 5px; background: var(--light-color); padding: 10px; border-radius: 8px;">${tool.observations}</p>
                     </div>
                 ` : ''}
+                
+                <div style="margin-top: 20px; font-size: 12px; color: var(--gray-color);">
+                    <p>Cadastrado por: ${tool.usuarioCadastro || 'N/A'} em ${tool.dataCadastro || 'N/A'}</p>
+                </div>
                 
                 <div style="margin-top: 20px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
                     <button id="modalQRBtn" class="mobile-btn" style="background: #8e44ad; color: white;" data-id="${tool.id}">
@@ -1996,7 +2142,7 @@
                 id: tool.id,
                 nome: tool.name,
                 codigo: tool.code,
-                patrimonio: tool.patrimonio,
+                patrimonio: tool.patrimonio || '',
                 categoria: tool.category,
                 status: tool.status,
                 localizacao: tool.location
@@ -2431,7 +2577,8 @@
 
             try {
                 await initIndexedDB();
-                tools = await loadFromIndexedDB(100);
+                // Mude de 100 para 999999 ou 0 para carregar todos
+                tools = await loadFromIndexedDB(999999);
                 console.log(`📁 ${tools.length} itens carregados`);
 
                 await connectToSupabase();
