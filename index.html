@@ -2393,24 +2393,23 @@
             }
         }
 
-function showDashboard() {
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('mobileDashboard').style.display = 'flex';
+        function showDashboard() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('mobileDashboard').style.display = 'flex';
 
-    if (currentUser) {
-        const userBadge = document.getElementById('userBadge');
-        if (userBadge) {
-            userBadge.textContent =
-                currentUser.role === 'dev' ? 'DEV' :
-                currentUser.role === 'almoxarife' ? 'ALMOXARIFE' :
-                currentUser.role === 'admin' ? 'ADMIN' :
-                currentUser.role === 'supervisor' ? 'SUPERVISOR' : 'OPERADOR';
+            if (currentUser) {
+                const userBadge = document.getElementById('userBadge');
+                if (userBadge) {
+                    userBadge.textContent =
+                        currentUser.role === 'dev' ? 'DEV' :
+                            currentUser.role === 'almoxarife' ? 'ALMOXARIFE' :
+                                currentUser.role === 'admin' ? 'ADMIN' :
+                                    currentUser.role === 'supervisor' ? 'SUPERVISOR' : 'OPERADOR';
+                }
+            }
+            
         }
-    }
-    
-    // ADICIONE ESTA LINHA AQUI:
-    checkUrlForItem();
-}
+
         function openMenu() {
             document.getElementById('mobileSidebar').classList.add('open');
             document.getElementById('menuOverlay').style.display = 'block';
