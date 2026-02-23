@@ -17,7 +17,9 @@
     <!-- CDNs -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- QR Code - Múltiplas fontes para garantir -->
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <!-- Biblioteca para scanner de QR Code -->
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 
@@ -1221,7 +1223,7 @@
             document.getElementById('limparFormBtn').addEventListener('click', clearCadastroForm);
         }
 
-        // FUNÇÃO: Salvar novo item
+        // FUNÇÃO: Salvar novo item (VERSÃO ATUALIZADA COM QR CODE)
         async function saveNewItem() {
             const nome = document.getElementById('cadastroNome').value.trim();
             const codigo = document.getElementById('cadastroCodigo').value.trim();
@@ -1230,6 +1232,17 @@
                 showNotification('Preencha nome e código!', 'error');
                 return;
             }
+
+            // Gerar QR Code com os dados do item
+            const qrData = {
+                id: Date.now(),
+                nome: nome,
+                codigo: codigo,
+                patrimonio: document.getElementById('cadastroPatrimonio').value.trim() || '',
+                categoria: document.getElementById('cadastroCategoria').value || 'Outros',
+                status: document.getElementById('cadastroStatus').value,
+                localizacao: document.getElementById('cadastroLocalizacao').value || 'Almoxarifado Central'
+            };
 
             const novoItem = {
                 id: Date.now(),
@@ -1253,7 +1266,8 @@
                 usuarioCadastro: currentUser ? currentUser.name : 'Mobile User',
                 dataCadastro: new Date().toISOString().split('T')[0],
                 createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString()
+                updatedAt: new Date().toISOString(),
+                qrCode: JSON.stringify(qrData) // <-- NOVO: Salvar QR Code como string JSON
             };
 
             try {
@@ -1306,7 +1320,7 @@
             }
         }
 
-        // FUNÇÃO: Salvar item no Supabase
+        // FUNÇÃO: Salvar item no Supabase (VERSÃO ATUALIZADA COM QR CODE)
         async function saveItemToSupabase(item) {
             try {
                 const itemData = {
@@ -1330,7 +1344,8 @@
                     usuario_cadastro: item.usuarioCadastro,
                     data_cadastro: item.dataCadastro,
                     created_at: item.createdAt,
-                    updated_at: item.updatedAt
+                    updated_at: item.updatedAt,
+                    qr_code: item.qrCode // <-- NOVO: Enviar QR Code para o Supabase
                 };
 
                 const { error } = await supabaseClient
@@ -1343,6 +1358,120 @@
             } catch (error) {
                 console.error('Erro ao salvar no Supabase:', error);
                 return false;
+            }
+        }
+
+        // ============================================
+        // FUNÇÃO DE SINCRONIZAÇÃO ATUALIZADA (para incluir qr_code)
+        // ============================================
+        async function fetchAllFromSupabase() {
+            try {
+                if (!supabaseClient) {
+                    showNotification('Não conectado à nuvem', 'warning');
+                    return { success: false, count: 0, total: 0 };
+                }
+
+                showLoader(true);
+                showNotification('Buscando todos os itens...', 'warning');
+
+                const { count, error: countError } = await supabaseClient
+                    .from('tools')
+                    .select('*', { count: 'exact', head: true });
+
+                if (countError) throw countError;
+
+                totalToolsInDB = count || 0;
+                console.log(`📊 Total de itens no banco: ${totalToolsInDB}`);
+
+                if (totalToolsInDB === 0) {
+                    showNotification('Nenhum item encontrado', 'warning');
+                    return { success: false, count: 0, total: 0 };
+                }
+
+                const BATCH_SIZE = 1000;
+                let allTools = [];
+                let currentPage = 0;
+
+                while (allTools.length < totalToolsInDB) {
+                    const { data, error } = await supabaseClient
+                        .from('tools')
+                        .select('*')
+                        .range(currentPage * BATCH_SIZE, (currentPage * BATCH_SIZE) + BATCH_SIZE - 1)
+                        .order('id', { ascending: true });
+
+                    if (error) throw error;
+
+                    if (data && data.length > 0) {
+                        allTools = [...allTools, ...data];
+                        console.log(`📦 Página ${currentPage + 1}: ${data.length} itens`);
+
+                        const progress = Math.round((allTools.length / totalToolsInDB) * 100);
+                        showNotification(`Progresso: ${progress}%`, 'info');
+
+                        currentPage++;
+
+                        if (allTools.length < totalToolsInDB) {
+                            await new Promise(resolve => setTimeout(resolve, 300));
+                        }
+                    } else {
+                        break;
+                    }
+                }
+
+                console.log(`✅ Total recebido: ${allTools.length} itens`);
+
+                const convertedTools = allTools.map(item => ({
+                    id: item.id,
+                    name: item.name,
+                    code: item.code,
+                    patrimonio: item.patrimonio,
+                    ncm: item.ncm,
+                    category: item.category,
+                    status: item.status,
+                    location: item.location,
+                    condition: item.condition,
+                    notaFiscal: item.nota_fiscal,
+                    unidade: item.unidade,
+                    preco: item.preco,
+                    quantidade: item.quantidade,
+                    estoqueMinimo: item.estoque_minimo,
+                    estoqueMaximo: item.estoque_maximo,
+                    description: item.description,
+                    observations: item.observations,
+                    image: item.image_url,
+                    usuarioCadastro: item.usuario_cadastro,
+                    dataCadastro: item.data_cadastro,
+                    createdAt: item.created_at,
+                    updatedAt: item.updated_at,
+                    qrCode: item.qr_code // <-- NOVO: Incluir qr_code na conversão
+                }));
+
+                // Salvar TODOS os itens no IndexedDB
+                await saveToIndexedDB(convertedTools);
+
+                // Carregar TODOS os itens para memória
+                tools = await loadFromIndexedDB(999999);
+
+                updateUI();
+
+                localStorage.setItem('lastSync', new Date().toISOString());
+                localStorage.setItem('totalItems', totalToolsInDB.toString());
+
+                showNotification(`✅ ${allTools.length} itens sincronizados!`, 'success');
+                updateSyncInfo();
+
+                return {
+                    success: true,
+                    count: allTools.length,
+                    total: totalToolsInDB
+                };
+
+            } catch (error) {
+                console.error('❌ Erro ao sincronizar:', error);
+                showNotification(`Erro: ${error.message}`, 'error');
+                return { success: false, count: 0, total: 0 };
+            } finally {
+                showLoader(false);
             }
         }
 
@@ -1476,42 +1605,95 @@
 
         function handleQRCodeDetected(data) {
             try {
-                // Tentar parsear como JSON
-                let parsedData;
-                try {
-                    parsedData = JSON.parse(data);
-                    currentScannedData = parsedData;
+                console.log('QR Code detectado:', data);
 
-                    // Mostrar resultado formatado
-                    showScannerResult(parsedData);
+                // Parar o scanner imediatamente
+                stopScanner();
 
-                    // Parar scanner temporariamente
-                    stopScanningTemporarily();
+                // Verificar se é um link do nosso sistema
+                if (data.includes('?item=')) {
+                    // Extrair o ID do item da URL
+                    const urlParams = new URLSearchParams(data.split('?')[1]);
+                    const itemId = urlParams.get('item');
 
-                    // Verificar se o item existe localmente
-                    const itemExists = tools.some(tool =>
-                        tool.id == parsedData.id ||
-                        tool.code === parsedData.codigo ||
-                        (tool.patrimonio && tool.patrimonio === parsedData.patrimonio)
-                    );
+                    if (itemId) {
+                        showNotification('Item detectado! Abrindo...', 'success');
 
-                    if (itemExists) {
-                        document.getElementById('viewScannedItemBtn').style.display = 'block';
+                        // Converter para número se necessário
+                        const idToFind = isNaN(itemId) ? itemId : Number(itemId);
+
+                        // Procurar o item
+                        const tool = tools.find(t => t.id == idToFind);
+
+                        if (tool) {
+                            // Mostrar detalhes do item
+                            setTimeout(() => {
+                                showToolDetails(tool.id);
+                            }, 500); // Pequeno delay para garantir que o scanner parou
+                        } else {
+                            showNotification('Item não encontrado no sistema', 'error');
+
+                            // Mostrar o link escaneado
+                            document.getElementById('scannerResult').style.display = 'block';
+                            document.getElementById('scannedData').innerHTML = `
+                        <div style="margin-bottom: 10px;">
+                            <strong style="color: var(--warning-color);">⚠ Item não encontrado</strong>
+                        </div>
+                        <p><strong>Link escaneado:</strong></p>
+                        <div style="background: white; padding: 10px; border-radius: 5px; word-break: break-all;">
+                            ${data}
+                        </div>
+                        <p style="margin-top: 10px;">ID do item: ${itemId}</p>
+                    `;
+                        }
                     }
+                }
+                // Verificar se é JSON com ID (compatibilidade com QR Codes antigos)
+                else if (data.startsWith('{') && data.includes('"id"')) {
+                    try {
+                        const parsedData = JSON.parse(data);
+                        if (parsedData.id) {
+                            showNotification('QR Code antigo detectado! Abrindo...', 'info');
 
-                } catch (jsonError) {
-                    // Se não for JSON, mostrar texto puro
-                    currentScannedData = { texto: data };
-                    showScannerResult({ texto: data, formato: 'Texto' });
-                    stopScanningTemporarily();
+                            const tool = tools.find(t => t.id == parsedData.id);
+                            if (tool) {
+                                setTimeout(() => {
+                                    showToolDetails(tool.id);
+                                }, 500);
+                            } else {
+                                showNotification('Item não encontrado', 'error');
+                            }
+                        }
+                    } catch (e) {
+                        // Não é JSON válido
+                        showTextQRCode(data);
+                    }
+                }
+                else {
+                    // É texto simples
+                    showTextQRCode(data);
                 }
 
             } catch (error) {
                 console.error('Erro ao processar QR Code:', error);
                 showNotification('Erro ao processar QR Code', 'error');
+                showTextQRCode(data);
             }
         }
 
+        // Função auxiliar para mostrar texto genérico
+        function showTextQRCode(data) {
+            document.getElementById('scannerResult').style.display = 'block';
+            document.getElementById('scannedData').innerHTML = `
+        <div style="margin-bottom: 10px;">
+            <strong style="color: var(--warning-color);">⚠ Texto Detectado</strong>
+        </div>
+        <p><strong>Conteúdo:</strong></p>
+        <div style="background: white; padding: 10px; border-radius: 5px; word-break: break-all;">
+            ${data}
+        </div>
+    `;
+        }
         function showScannerResult(data) {
             const resultContainer = document.getElementById('scannerResult');
             const dataContainer = document.getElementById('scannedData');
@@ -1693,123 +1875,10 @@
                         store.createIndex('category', 'category', { unique: false });
                         store.createIndex('status', 'status', { unique: false });
                         store.createIndex('updatedAt', 'updatedAt', { unique: false });
+                        // Nota: qr_code será armazenado automaticamente como parte do objeto
                     }
                 };
             });
-        }
-
-        // ============================================
-        // FUNÇÃO DE SINCRONIZAÇÃO CORRIGIDA
-        // ============================================
-
-        async function fetchAllFromSupabase() {
-            try {
-                if (!supabaseClient) {
-                    showNotification('Não conectado à nuvem', 'warning');
-                    return { success: false, count: 0, total: 0 };
-                }
-
-                showLoader(true);
-                showNotification('Buscando todos os itens...', 'warning');
-
-                const { count, error: countError } = await supabaseClient
-                    .from('tools')
-                    .select('*', { count: 'exact', head: true });
-
-                if (countError) throw countError;
-
-                totalToolsInDB = count || 0;
-                console.log(`📊 Total de itens no banco: ${totalToolsInDB}`);
-
-                if (totalToolsInDB === 0) {
-                    showNotification('Nenhum item encontrado', 'warning');
-                    return { success: false, count: 0, total: 0 };
-                }
-
-                const BATCH_SIZE = 1000;
-                let allTools = [];
-                let currentPage = 0;
-
-                while (allTools.length < totalToolsInDB) {
-                    const { data, error } = await supabaseClient
-                        .from('tools')
-                        .select('*')
-                        .range(currentPage * BATCH_SIZE, (currentPage * BATCH_SIZE) + BATCH_SIZE - 1)
-                        .order('id', { ascending: true });
-
-                    if (error) throw error;
-
-                    if (data && data.length > 0) {
-                        allTools = [...allTools, ...data];
-                        console.log(`📦 Página ${currentPage + 1}: ${data.length} itens`);
-
-                        const progress = Math.round((allTools.length / totalToolsInDB) * 100);
-                        showNotification(`Progresso: ${progress}%`, 'info');
-
-                        currentPage++;
-
-                        if (allTools.length < totalToolsInDB) {
-                            await new Promise(resolve => setTimeout(resolve, 300));
-                        }
-                    } else {
-                        break;
-                    }
-                }
-
-                console.log(`✅ Total recebido: ${allTools.length} itens`);
-
-                const convertedTools = allTools.map(item => ({
-                    id: item.id,
-                    name: item.name,
-                    code: item.code,
-                    patrimonio: item.patrimonio,
-                    ncm: item.ncm,
-                    category: item.category,
-                    status: item.status,
-                    location: item.location,
-                    condition: item.condition,
-                    notaFiscal: item.nota_fiscal,
-                    unidade: item.unidade,
-                    preco: item.preco,
-                    quantidade: item.quantidade,
-                    estoqueMinimo: item.estoque_minimo,
-                    estoqueMaximo: item.estoque_maximo,
-                    description: item.description,
-                    observations: item.observations,
-                    image: item.image_url,
-                    usuarioCadastro: item.usuario_cadastro,
-                    dataCadastro: item.data_cadastro,
-                    createdAt: item.created_at,
-                    updatedAt: item.updated_at
-                }));
-
-                // Salvar TODOS os itens no IndexedDB
-                await saveToIndexedDB(convertedTools);
-
-                // Carregar TODOS os itens para memória
-                tools = await loadFromIndexedDB(999999);
-
-                updateUI();
-
-                localStorage.setItem('lastSync', new Date().toISOString());
-                localStorage.setItem('totalItems', totalToolsInDB.toString());
-
-                showNotification(`✅ ${allTools.length} itens sincronizados!`, 'success');
-                updateSyncInfo();
-
-                return {
-                    success: true,
-                    count: allTools.length,
-                    total: totalToolsInDB
-                };
-
-            } catch (error) {
-                console.error('❌ Erro ao sincronizar:', error);
-                showNotification(`Erro: ${error.message}`, 'error');
-                return { success: false, count: 0, total: 0 };
-            } finally {
-                showLoader(false);
-            }
         }
 
         async function saveToIndexedDB(data) {
@@ -1959,29 +2028,29 @@
             const listElement = document.getElementById('toolsList');
             const searchInput = document.getElementById('searchInput');
             const loadMoreBtn = document.getElementById('loadMoreBtn');
-            
+
             const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
-            
+
             let displayTools = [];
-            
+
             if (searchTerm) {
                 // Mostrar loader durante a busca
                 showLoader(true);
-                
+
                 try {
                     // Buscar em TODOS os itens do IndexedDB
                     displayTools = await searchInIndexedDB(searchTerm);
-                    
+
                     // Atualizar contagem
-                    document.getElementById('toolsCount').textContent = 
+                    document.getElementById('toolsCount').textContent =
                         `${displayTools.length} de ${localStorage.getItem('totalItems') || tools.length} itens encontrados`;
-                    
+
                     if (displayTools.length === 0) {
                         listElement.innerHTML = '<p style="text-align: center; color: var(--gray-color); padding: 40px;">Nenhum item encontrado para "' + searchTerm + '"</p>';
                         showLoader(false);
                         return;
                     }
-                    
+
                 } catch (error) {
                     console.error('Erro na busca:', error);
                     showNotification('Erro ao buscar itens', 'error');
@@ -1989,31 +2058,31 @@
                 } finally {
                     showLoader(false);
                 }
-                
+
                 // Esconder botão "Carregar mais" durante a busca
                 if (loadMoreBtn) {
                     loadMoreBtn.style.display = 'none';
                 }
-                
+
             } else {
                 // Sem busca: mostrar TODOS os itens da memória
                 displayTools = tools;
-                
+
                 // Esconder botão "Carregar mais" pois já temos todos
                 if (loadMoreBtn) {
                     loadMoreBtn.style.display = 'none';
                 }
-                
+
                 if (displayTools.length === 0) {
                     listElement.innerHTML = '<p style="text-align: center; color: var(--gray-color); padding: 40px;">Nenhum item cadastrado</p>';
                     return;
                 }
-                
+
                 // Atualizar contagem
-                document.getElementById('toolsCount').textContent = 
+                document.getElementById('toolsCount').textContent =
                     `${displayTools.length} de ${displayTools.length} itens carregados`;
             }
-            
+
             // Renderizar os resultados
             renderToolList(displayTools);
         }
@@ -2138,6 +2207,7 @@
                 
                 <div style="margin-top: 20px; font-size: 12px; color: var(--gray-color);">
                     <p>Cadastrado por: ${tool.usuarioCadastro || 'N/A'} em ${tool.dataCadastro || 'N/A'}</p>
+                    ${tool.qrCode ? '<p><i class="fas fa-check-circle" style="color: var(--success-color);"></i> QR Code gerado automaticamente</p>' : ''}
                 </div>
                 
                 <div style="margin-top: 20px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
@@ -2164,57 +2234,118 @@
         }
 
         function generateQRCode(toolId) {
+            console.log('Gerando QR Code para:', toolId);
+
             const tool = tools.find(t => t.id == toolId);
-            if (!tool) return;
+            if (!tool) {
+                console.error('Ferramenta não encontrada:', toolId);
+                showNotification('Erro: Item não encontrado', 'error');
+                return;
+            }
 
-            const qrContent = JSON.stringify({
-                id: tool.id,
-                nome: tool.name,
-                codigo: tool.code,
-                patrimonio: tool.patrimonio || '',
-                categoria: tool.category,
-                status: tool.status,
-                localizacao: tool.location
-            }, null, 2);
+            // Criar um link profundo para o aplicativo
+            // Formato: fwtools://item/{id}
+            // Ou se preferir um link web: https://seusite.com/item/{id}
+            const baseUrl = window.location.origin + window.location.pathname;
+            const linkUrl = `${baseUrl}?item=${Date.now()}`;
 
-            document.getElementById('qrModalBody').innerHTML = `
-                <div style="margin-bottom: 20px;">
-                    <h4>${tool.name}</h4>
-                    <p style="color: var(--gray-color); font-size: 14px;">${tool.code}</p>
-                </div>
-                <div id="qrcodeCanvas" style="margin: 0 auto 20px;"></div>
-                <div style="margin-top: 20px;">
-                    <button id="downloadQRBtn" class="mobile-btn" style="background: var(--secondary-color); color: white;">
-                        <i class="fas fa-download"></i> Baixar QR Code
-                    </button>
-                    <button id="closeQRBtn" class="mobile-btn" style="background: var(--gray-color); color: white; margin-top: 10px;">
-                        <i class="fas fa-times"></i> Fechar
-                    </button>
-                </div>
-            `;
+            const novoItem = {
+                // ... outros campos ...
+                qrCode: linkUrl // Salvar o link em vez do JSON
+            };
+            // QR Code compacto com apenas o link
+            const qrContent = linkUrl;
 
-            // Gerar QR Code
-            QRCode.toCanvas(document.getElementById('qrcodeCanvas'), qrContent, {
-                width: 200,
-                margin: 2,
-                color: { dark: '#000000', light: '#FFFFFF' }
-            });
+            console.log('Link gerado:', linkUrl);
+            console.log('Tamanho do QR Code:', qrContent.length, 'caracteres');
 
-            // Mostrar modal
+            // Preparar o modal
+            const qrModalBody = document.getElementById('qrModalBody');
+            qrModalBody.innerHTML = `
+        <div style="margin-bottom: 20px;">
+            <h4>${tool.name}</h4>
+            <p style="color: var(--gray-color); font-size: 14px;">${tool.code}</p>
+        </div>
+        <div id="qrcodeContainer" style="margin: 20px auto; text-align: center;"></div>
+        <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px;">
+            <button id="downloadQRBtn" class="mobile-btn" style="background: var(--secondary-color); color: white;">
+                <i class="fas fa-download"></i> Baixar QR Code
+            </button>
+            <button id="closeQRBtn" class="mobile-btn" style="background: var(--gray-color); color: white;">
+                <i class="fas fa-times"></i> Fechar
+            </button>
+        </div>
+        <p style="font-size: 10px; color: var(--gray-color); margin-top: 10px; word-break: break-all;">
+            Link: ${linkUrl}
+        </p>
+    `;
+
+            // Mostrar o modal
             document.getElementById('qrModal').style.display = 'flex';
 
-            // Eventos
-            document.getElementById('downloadQRBtn').addEventListener('click', function () {
-                const canvas = document.querySelector('#qrcodeCanvas canvas');
-                if (canvas) {
-                    const link = document.createElement('a');
-                    link.download = `QRCode_${tool.code}.png`;
-                    link.href = canvas.toDataURL('image/png');
-                    link.click();
-                }
-            });
+            // Gerar QR Code
+            setTimeout(() => {
+                try {
+                    const container = document.getElementById('qrcodeContainer');
+                    container.innerHTML = '';
 
-            document.getElementById('closeQRBtn').addEventListener('click', closeQRModal);
+                    new QRCode(container, {
+                        text: qrContent,
+                        width: 200,
+                        height: 200,
+                        colorDark: "#000000",
+                        colorLight: "#ffffff",
+                        correctLevel: QRCode.CorrectLevel.L
+                    });
+
+                    console.log('QR Code gerado com sucesso!');
+
+                    // Evento de download
+                    document.getElementById('downloadQRBtn').addEventListener('click', function () {
+                        const canvas = container.querySelector('canvas');
+                        if (canvas) {
+                            const link = document.createElement('a');
+                            link.download = `QRCode_${tool.code}.png`;
+                            link.href = canvas.toDataURL('image/png');
+                            link.click();
+                            showNotification('QR Code baixado!', 'success');
+                        }
+                    });
+
+                    document.getElementById('closeQRBtn').addEventListener('click', closeQRModal);
+
+                } catch (error) {
+                    console.error('Erro ao gerar QR Code:', error);
+                    document.getElementById('qrcodeContainer').innerHTML =
+                        '<p style="color: var(--danger-color);">Erro ao gerar QR Code</p>';
+                }
+            }, 100);
+
+
+            // Eventos dos botões
+            setTimeout(() => {
+                const downloadBtn = document.getElementById('downloadQRBtn');
+                const closeBtn = document.getElementById('closeQRBtn');
+
+                if (downloadBtn) {
+                    downloadBtn.addEventListener('click', function () {
+                        const canvas = document.querySelector('#qrcodeCanvas canvas');
+                        if (canvas) {
+                            const link = document.createElement('a');
+                            link.download = `QRCode_${tool.code}_${tool.id}.png`;
+                            link.href = canvas.toDataURL('image/png');
+                            link.click();
+                            showNotification('QR Code baixado!', 'success');
+                        } else {
+                            showNotification('Erro ao baixar QR Code', 'error');
+                        }
+                    });
+                }
+
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', closeQRModal);
+                }
+            }, 200);
         }
 
         // ============================================
@@ -2414,7 +2545,7 @@
 
         function showAbout() {
             closeMenu();
-            alert('Sistema de Ferramentas Mobile v1.0.4\n\nDesenvolvido por Fábio Mendes Rodrigues.\n\n© 2026 FW Company');
+            alert('Sistema de Ferramentas Mobile v1.0.5\n\nDesenvolvido por Fábio Mendes Rodrigues.\n\n© 2026 FW Company');
         }
 
         function showHelp() {
@@ -2532,7 +2663,7 @@
                     if (searchTimeout) {
                         clearTimeout(searchTimeout);
                     }
-                    
+
                     // Aguardar 300ms após o usuário parar de digitar
                     searchTimeout = setTimeout(() => {
                         updateToolsList();
@@ -2649,6 +2780,7 @@
                 console.error('❌ Erro na inicialização:', error);
                 showNotification('Erro ao inicializar', 'error');
             }
+
         }
     </script>
 </body>
