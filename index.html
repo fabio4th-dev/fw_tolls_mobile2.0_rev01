@@ -389,6 +389,11 @@
             color: white;
         }
 
+        .mobile-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
         /* Scanner */
         .scanner-container {
             width: 100%;
@@ -500,6 +505,27 @@
             top: 0;
             left: 0;
         }
+
+        /* Classe para ocultar elementos sensíveis */
+        .restricted-hidden {
+            display: none !important;
+        }
+
+        .restricted-blur {
+            filter: blur(5px);
+            user-select: none;
+            position: relative;
+        }
+
+        .restricted-blur::after {
+            content: "🔒";
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 16px;
+            z-index: 10;
+        }
     </style>
 </head>
 
@@ -551,7 +577,9 @@
                         <h1 style="font-size: 18px; font-weight: bold;">Sistema de Ferramentas</h1>
                         <div style="display: flex; align-items: center; gap: 10px; margin-top: 5px;">
                             <span id="userBadge"
-                                style="background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 12px; font-size: 12px;">DEV</span>
+                                style="background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 12px; font-size: 12px;"></span>
+                            <span id="userName"
+                                style="background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 12px; font-size: 12px;"></span>
                             <span id="connectionStatus"
                                 style="background: rgba(231,76,60,0.2); color: #e74c3c; padding: 4px 10px; border-radius: 12px; font-size: 12px;">Offline</span>
                         </div>
@@ -568,7 +596,7 @@
                         <div style="font-size: 12px; opacity: 0.9;">Itens</div>
                         <div style="font-size: 20px; font-weight: bold;" id="totalItems">0/0</div>
                     </div>
-                    <div>
+                    <div id="totalValueContainer">
                         <div style="font-size: 12px; opacity: 0.9;">Valor</div>
                         <div style="font-size: 20px; font-weight: bold;" id="totalValue">R$ 0</div>
                     </div>
@@ -780,7 +808,7 @@
                     <i class="fas fa-home"></i>
                     <span>Início</span>
                 </button>
-                <button class="tab-button" data-tab="cadastro">
+                <button class="tab-button" data-tab="cadastro" id="tabCadastroBtn">
                     <i class="fas fa-plus-circle"></i>
                     <span>Novo</span>
                 </button>
@@ -900,7 +928,7 @@
 
     <script>
         // ============================================
-        // CONFIGURAÇÃO SUPABASE - NOVAS CREDENCIAIS
+        // CONFIGURAÇÃO SUPABASE
         // ============================================
         const SUPABASE_CONFIG = {
             url: 'https://eokhafnfmynhridksnuh.supabase.co',
@@ -925,23 +953,103 @@
         let searchTimeout = null;
 
         // ============================================
+        // FUNÇÃO PARA VERIFICAR SE USUÁRIO TEM PERMISSÃO
+        // ============================================
+        function isRestrictedUser() {
+            // Retorna true apenas para o usuário genérico (fwuser)
+            return currentUser && currentUser.email === 'fwuser@fwcompany.com.br';
+        }
+
+        function canCreateItems() {
+            // Todos podem criar, exceto o usuário genérico
+            return !isRestrictedUser();
+        }
+
+        function canViewFinancial() {
+            // Todos podem ver valores, exceto o usuário genérico
+            return !isRestrictedUser();
+        }
+
+        // ============================================
+        // FUNÇÃO PARA APLICAR RESTRIÇÕES NA INTERFACE
+        // ============================================
+        function applyRestrictions() {
+            const restricted = isRestrictedUser();
+            
+            // Mostrar/ocultar nome do usuário
+            const userNameSpan = document.getElementById('userName');
+            if (userNameSpan && currentUser) {
+                userNameSpan.textContent = currentUser.name;
+            }
+            
+            // Ocultar valores financeiros para usuário restrito
+            const totalValueContainer = document.getElementById('totalValueContainer');
+            const totalValue = document.getElementById('totalValue');
+            
+            if (restricted) {
+                // Ocultar container de valor
+                if (totalValueContainer) {
+                    totalValueContainer.style.display = 'none';
+                }
+                // Substituir valor por oculto
+                if (totalValue) {
+                    totalValue.textContent = '🔒 OCULTO';
+                }
+                
+                // Desabilitar botão de novo item
+                const addItemBtn = document.getElementById('addItemBtn');
+                if (addItemBtn) {
+                    addItemBtn.disabled = true;
+                    addItemBtn.style.opacity = '0.5';
+                    addItemBtn.title = 'Acesso restrito';
+                }
+                
+                // Ocultar a tab de cadastro no footer
+                const tabCadastroBtn = document.getElementById('tabCadastroBtn');
+                if (tabCadastroBtn) {
+                    tabCadastroBtn.style.display = 'none';
+                }
+                
+                // Se estiver na tab de cadastro, voltar para dashboard
+                if (currentTab === 'cadastro') {
+                    switchTab('dashboard');
+                }
+            } else {
+                // Mostrar container de valor
+                if (totalValueContainer) {
+                    totalValueContainer.style.display = 'block';
+                }
+                
+                // Habilitar botão de novo item
+                const addItemBtn = document.getElementById('addItemBtn');
+                if (addItemBtn) {
+                    addItemBtn.disabled = false;
+                    addItemBtn.style.opacity = '1';
+                    addItemBtn.title = '';
+                }
+                
+                // Mostrar a tab de cadastro no footer
+                const tabCadastroBtn = document.getElementById('tabCadastroBtn');
+                if (tabCadastroBtn) {
+                    tabCadastroBtn.style.display = 'flex';
+                }
+            }
+        }
+
+        // ============================================
         // FUNÇÕES DE CONTROLE DE MODAL
         // ============================================
-
         function setupModalEvents() {
-            // Fechar modal principal
             const closeModalBtn = document.getElementById('closeModalBtn');
             if (closeModalBtn) {
                 closeModalBtn.addEventListener('click', closeItemModal);
             }
 
-            // Fechar modal QR Code
             const closeQRModalBtn = document.getElementById('closeQRModalBtn');
             if (closeQRModalBtn) {
                 closeQRModalBtn.addEventListener('click', closeQRModal);
             }
 
-            // Fechar modais clicando fora do conteúdo
             const itemModal = document.getElementById('itemModal');
             const qrModal = document.getElementById('qrModal');
 
@@ -973,8 +1081,6 @@
         // ============================================
         // FUNÇÕES PRINCIPAIS
         // ============================================
-
-        // FUNÇÃO: Atualizar estatísticas de status
         function updateStatusStats() {
             const statsElement = document.getElementById('statusStats');
 
@@ -983,7 +1089,6 @@
                 return;
             }
 
-            // Contar status
             const stats = {
                 'Disponível': 0,
                 'Em Uso': 0,
@@ -1000,7 +1105,6 @@
                 }
             });
 
-            // Gerar HTML
             let html = '';
             const total = tools.length;
 
@@ -1026,7 +1130,6 @@
             statsElement.innerHTML = html;
         }
 
-        // FUNÇÃO: Atualizar itens recentes
         function updateRecentItems() {
             const recentElement = document.getElementById('recentItems');
             const recent = tools.slice(0, 5);
@@ -1061,7 +1164,6 @@
             recentElement.innerHTML = html;
         }
 
-        // FUNÇÃO: Atualizar informações de sincronização
         function updateSyncInfo() {
             const lastSync = localStorage.getItem('lastSync');
             const totalItems = localStorage.getItem('totalItems') || '?';
@@ -1078,8 +1180,19 @@
             }
         }
 
-        // FUNÇÃO: Carregar formulário de cadastro
         function loadCadastroForm() {
+            // Se for usuário restrito, não carregar o formulário
+            if (isRestrictedUser()) {
+                document.getElementById('cadastroForm').innerHTML = `
+                    <div class="card" style="text-align: center; padding: 40px 20px;">
+                        <i class="fas fa-lock" style="font-size: 60px; color: var(--danger-color); margin-bottom: 20px;"></i>
+                        <h3 style="color: var(--danger-color); margin-bottom: 10px;">Acesso Restrito</h3>
+                        <p style="color: var(--gray-color);">Você não tem permissão para cadastrar novos itens.</p>
+                    </div>
+                `;
+                return;
+            }
+
             document.getElementById('cadastroForm').innerHTML = `
                 <div class="card">
                     <h3 style="margin-bottom: 15px;">Cadastrar Novo Item</h3>
@@ -1222,8 +1335,13 @@
             document.getElementById('limparFormBtn').addEventListener('click', clearCadastroForm);
         }
 
-        // FUNÇÃO: Salvar novo item
         async function saveNewItem() {
+            // Verificar permissão
+            if (!canCreateItems()) {
+                showNotification('Você não tem permissão para cadastrar itens', 'error');
+                return;
+            }
+
             const nome = document.getElementById('cadastroNome').value.trim();
             const codigo = document.getElementById('cadastroCodigo').value.trim();
 
@@ -1232,7 +1350,6 @@
                 return;
             }
 
-            // Gerar link para o QR Code
             const baseUrl = window.location.origin + window.location.pathname;
             const linkUrl = `${baseUrl}?item=${Date.now()}`;
 
@@ -1281,8 +1398,9 @@
             }
         }
 
-        // FUNÇÃO: Limpar formulário de cadastro
         function clearCadastroForm() {
+            if (!canCreateItems()) return;
+            
             if (document.getElementById('cadastroNome')) {
                 document.getElementById('cadastroNome').value = '';
                 document.getElementById('cadastroCodigo').value = '';
@@ -1304,7 +1422,6 @@
             }
         }
 
-        // FUNÇÃO: Salvar item no Supabase
         async function saveItemToSupabase(item) {
             try {
                 const itemData = {
@@ -1566,20 +1683,14 @@
             }, 250);
         }
 
-        // ============================================
-        // FUNÇÃO PRINCIPAL DO QR CODE - COM BUSCA NO SUPABASE
-        // ============================================
         function handleQRCodeDetected(data) {
             try {
                 console.log('========== QR CODE DETECTADO ==========');
                 console.log('Conteúdo bruto:', data);
                 
-                // Parar o scanner
                 stopScanner();
                 
-                // Verificar se é um link do nosso sistema
                 if (data.includes('?item=')) {
-                    // Extrair o ID da URL
                     const urlParams = new URLSearchParams(data.split('?')[1]);
                     let itemId = urlParams.get('item');
                     
@@ -1587,7 +1698,6 @@
                     
                     showNotification('Buscando item...', 'info');
                     
-                    // Primeiro, tentar buscar localmente (mais rápido)
                     buscarItemLocal(itemId).then(toolLocal => {
                         if (toolLocal) {
                             console.log('✅ Item encontrado localmente!');
@@ -1595,13 +1705,10 @@
                         } else {
                             console.log('❌ Item não encontrado localmente, buscando no Supabase...');
                             showNotification('Item não está no cache. Buscando na nuvem...', 'warning');
-                            
-                            // Buscar no Supabase
                             buscarItemNoSupabase(itemId);
                         }
                     });
                 }
-                // Verificar se é JSON com ID (QR Code antigo)
                 else if (data.startsWith('{') && (data.includes('"id"') || data.includes('"cod"'))) {
                     try {
                         const parsedData = JSON.parse(data);
@@ -1632,13 +1739,10 @@
             }
         }
 
-        // Função para buscar item localmente
         function buscarItemLocal(itemId) {
             return new Promise((resolve) => {
-                // Converter para número se possível
                 const idToFind = isNaN(itemId) ? itemId : Number(itemId);
                 
-                // Buscar na memória primeiro
                 let tool = tools.find(t => t.id == idToFind);
                 
                 if (tool) {
@@ -1647,7 +1751,6 @@
                     return;
                 }
                 
-                // Se não achou na memória, buscar no IndexedDB
                 if (db) {
                     const transaction = db.transaction(['tools'], 'readonly');
                     const store = transaction.objectStore('tools');
@@ -1656,7 +1759,6 @@
                     request.onsuccess = () => {
                         if (request.result) {
                             console.log('Item encontrado no IndexedDB');
-                            // Atualizar a memória
                             tools.push(request.result);
                             resolve(request.result);
                         } else {
@@ -1675,7 +1777,6 @@
             });
         }
 
-        // Função para buscar item no Supabase
         async function buscarItemNoSupabase(itemId, dadosAdicionais = null) {
             if (!supabaseClient) {
                 showNotification('Sem conexão com o Supabase', 'error');
@@ -1687,10 +1788,8 @@
             try {
                 console.log('🔍 Buscando item no Supabase. ID:', itemId);
                 
-                // Preparar a consulta
                 let query = supabaseClient.from('tools').select('*');
                 
-                // Verificar se itemId é número (ID) ou texto (código)
                 if (!isNaN(itemId)) {
                     query = query.eq('id', Number(itemId));
                 } else {
@@ -1702,7 +1801,6 @@
                 if (error) {
                     console.error('Erro na consulta:', error);
                     
-                    // Se não encontrou por ID, tentar por outros campos
                     if (dadosAdicionais) {
                         console.log('Tentando busca alternativa com dados adicionais:', dadosAdicionais);
                         
@@ -1739,12 +1837,10 @@
             }
         }
 
-        // Função para processar item do Supabase
         async function processarItemDoSupabase(item) {
             try {
                 console.log('✅ Item encontrado no Supabase:', item);
                 
-                // Converter para o formato do sistema
                 const tool = {
                     id: item.id,
                     name: item.name,
@@ -1771,15 +1867,11 @@
                     qrCode: item.qr_code
                 };
                 
-                // Adicionar ao cache local
                 tools.push(tool);
-                
-                // Salvar no IndexedDB
                 await saveToIndexedDB(tools);
                 
                 showNotification('Item buscado da nuvem com sucesso!', 'success');
                 
-                // Mostrar detalhes do item
                 setTimeout(() => {
                     showToolDetails(tool.id);
                 }, 500);
@@ -1988,17 +2080,20 @@
             const totalInDB = localStorage.getItem('totalItems') || tools.length;
             document.getElementById('totalItems').textContent = `${tools.length}/${totalInDB}`;
 
-            const totalValue = tools.reduce((sum, tool) => {
-                const preco = parseFloat(tool.preco) || 0;
-                const quantidade = parseInt(tool.quantidade) || 1;
-                return sum + (preco * quantidade);
-            }, 0);
+            // Atualizar valor total apenas se tiver permissão
+            if (canViewFinancial()) {
+                const totalValue = tools.reduce((sum, tool) => {
+                    const preco = parseFloat(tool.preco) || 0;
+                    const quantidade = parseInt(tool.quantidade) || 1;
+                    return sum + (preco * quantidade);
+                }, 0);
 
-            document.getElementById('totalValue').textContent =
-                new Intl.NumberFormat('pt-BR', {
-                    style: 'currency',
-                    currency: 'BRL'
-                }).format(totalValue);
+                document.getElementById('totalValue').textContent =
+                    new Intl.NumberFormat('pt-BR', {
+                        style: 'currency',
+                        currency: 'BRL'
+                    }).format(totalValue);
+            }
 
             updateStatusStats();
             updateRecentItems();
@@ -2065,6 +2160,7 @@
 
         function renderToolList(toolsToRender) {
             const listElement = document.getElementById('toolsList');
+            const restricted = isRestrictedUser();
 
             let html = '';
             toolsToRender.forEach(tool => {
@@ -2135,6 +2231,7 @@
             const tool = tools.find(t => t.id == toolId);
             if (!tool) return;
 
+            const restricted = isRestrictedUser();
             const imageHTML = tool.image ?
                 `<div class="image-preview">
                     <img src="${tool.image}" alt="${tool.name}" onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\'fas fa-tools\' style=\'font-size:60px; color:#ccc;\'></i><p>Sem imagem</p>'">
@@ -2145,7 +2242,9 @@
                 </div>`;
 
             document.getElementById('modalTitle').textContent = tool.name;
-            document.getElementById('modalBody').innerHTML = `
+            
+            // Construir HTML dos detalhes
+            let detailsHtml = `
                 ${imageHTML}
                 
                 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 20px;">
@@ -2159,25 +2258,44 @@
                     <div><strong>Nota Fiscal:</strong><br>${tool.notaFiscal || 'Não informado'}</div>
                     <div><strong>Unidade:</strong><br>${tool.unidade || 'UN'}</div>
                     <div><strong>Quantidade:</strong><br>${tool.quantidade || 1}</div>
+            `;
+
+            // Adicionar preço apenas se tiver permissão
+            if (canViewFinancial()) {
+                detailsHtml += `
                     <div><strong>Preço:</strong><br>R$ ${parseFloat(tool.preco || 0).toFixed(2).replace('.', ',')}</div>
+                `;
+            } else {
+                detailsHtml += `
+                    <div><strong>Preço:</strong><br><span style="color: var(--gray-color);">🔒 Restrito</span></div>
+                `;
+            }
+
+            detailsHtml += `
                     <div><strong>Estoque Mín:</strong><br>${tool.estoqueMinimo || 0}</div>
                     <div><strong>Estoque Máx:</strong><br>${tool.estoqueMaximo || 0}</div>
                 </div>
-                
-                ${tool.description ? `
+            `;
+
+            if (tool.description) {
+                detailsHtml += `
                     <div style="margin-top: 15px;">
                         <strong>Descrição:</strong>
                         <p style="margin-top: 5px; background: var(--light-color); padding: 10px; border-radius: 8px;">${tool.description}</p>
                     </div>
-                ` : ''}
-                
-                ${tool.observations ? `
+                `;
+            }
+
+            if (tool.observations) {
+                detailsHtml += `
                     <div style="margin-top: 15px;">
                         <strong>Observações:</strong>
                         <p style="margin-top: 5px; background: var(--light-color); padding: 10px; border-radius: 8px;">${tool.observations}</p>
                     </div>
-                ` : ''}
-                
+                `;
+            }
+
+            detailsHtml += `
                 <div style="margin-top: 20px; font-size: 12px; color: var(--gray-color);">
                     <p>Cadastrado por: ${tool.usuarioCadastro || 'N/A'} em ${tool.dataCadastro || 'N/A'}</p>
                     ${tool.qrCode ? '<p><i class="fas fa-check-circle" style="color: var(--success-color);"></i> QR Code gerado automaticamente</p>' : ''}
@@ -2193,6 +2311,7 @@
                 </div>
             `;
 
+            document.getElementById('modalBody').innerHTML = detailsHtml;
             document.getElementById('itemModal').style.display = 'flex';
 
             document.getElementById('modalQRBtn').addEventListener('click', function () {
@@ -2214,13 +2333,11 @@
                 return;
             }
 
-            // Criar link para o QR Code
             const baseUrl = window.location.origin + window.location.pathname;
             const linkUrl = `${baseUrl}?item=${tool.id}`;
             
             console.log('Link gerado:', linkUrl);
 
-            // Preparar o modal
             const qrModalBody = document.getElementById('qrModalBody');
             qrModalBody.innerHTML = `
                 <div style="margin-bottom: 20px;">
@@ -2298,12 +2415,10 @@
                             console.log('Item da URL encontrado:', tool);
                             showToolDetails(tool.id);
                             
-                            // Limpar a URL para não abrir novamente
                             window.history.replaceState({}, document.title, window.location.pathname);
                         } else {
                             console.log('Item da URL não encontrado localmente');
                             
-                            // Tentar buscar no Supabase
                             if (supabaseClient) {
                                 showNotification('Buscando item da URL na nuvem...', 'info');
                                 buscarItemNoSupabase(itemId);
@@ -2371,9 +2486,11 @@
                         currentUser.role === 'admin' ? 'ADMIN' :
                         currentUser.role === 'supervisor' ? 'SUPERVISOR' : 'OPERADOR';
                 }
+                
+                // Aplicar restrições baseadas no usuário
+                applyRestrictions();
             }
             
-            // Verificar se há item na URL
             checkUrlForItem();
         }
 
@@ -2491,7 +2608,7 @@
         }
 
         function showUserProfile() {
-            alert(`Perfil do Usuário:\n\nNome: ${currentUser.name}\nEmail: ${currentUser.email}\nFunção: ${currentUser.role}`);
+            alert(`Perfil do Usuário:\n\nNome: ${currentUser.name}\nEmail: ${currentUser.email}\nFunção: ${currentUser.role}\nPermissões: ${canCreateItems() ? '✅ Pode cadastrar' : '❌ Não pode cadastrar'} | ${canViewFinancial() ? '✅ Vê valores' : '❌ Não vê valores'}`);
             closeMenu();
         }
 
@@ -2512,12 +2629,12 @@
 
         function showAbout() {
             closeMenu();
-            alert('Sistema de Ferramentas Mobile v2.0\n\nDesenvolvido por Fábio Mendes Rodrigues.\n\n© 2026 FW Company');
+            alert('Sistema de Ferramentas Mobile v2.1\n\nDesenvolvido por Fábio Mendes Rodrigues.\n\n© 2026 FW Company');
         }
 
         function showHelp() {
             closeMenu();
-            alert('Ajuda do Sistema:\n\n1. Dashboard: Visão geral\n2. Novo: Cadastrar itens\n3. Itens: Lista completa\n4. Scanner: Ler QR Codes\n5. Config: Configurações\n\nUse o menu para mais opções.');
+            alert('Ajuda do Sistema:\n\n1. Dashboard: Visão geral\n2. Novo: Cadastrar itens (restrito para usuário genérico)\n3. Itens: Lista completa\n4. Scanner: Ler QR Codes\n5. Config: Configurações\n\nUse o menu para mais opções.');
         }
 
         // ============================================
@@ -2606,7 +2723,11 @@
             const addItemBtn = document.getElementById('addItemBtn');
             if (addItemBtn) {
                 addItemBtn.addEventListener('click', () => {
-                    switchTab('cadastro');
+                    if (canCreateItems()) {
+                        switchTab('cadastro');
+                    } else {
+                        showNotification('Você não tem permissão para cadastrar itens', 'error');
+                    }
                 });
             }
 
