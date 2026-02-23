@@ -526,6 +526,35 @@
             font-size: 16px;
             z-index: 10;
         }
+
+        /* Botão de logout - CORRIGIDO PARA IPHONE */
+        .menu-item.logout {
+            color: #ffffff !important;
+            background: var(--danger-color) !important;
+            margin-top: 10px;
+            border-radius: 8px;
+        }
+
+        .menu-item.logout i {
+            color: #ffffff !important;
+        }
+
+        .menu-item.logout:hover,
+        .menu-item.logout:active {
+            background: #c0392b !important;
+        }
+
+        /* Garantir que todos os botões do menu sejam visíveis */
+        .menu-item {
+            color: var(--text-color);
+            background: transparent;
+        }
+
+        .menu-footer {
+            background: #f8f9fa;
+            border-top: 2px solid var(--border-color);
+            padding: 15px;
+        }
     </style>
 </head>
 
@@ -975,17 +1004,17 @@
         // ============================================
         function applyRestrictions() {
             const restricted = isRestrictedUser();
-            
+
             // Mostrar/ocultar nome do usuário
             const userNameSpan = document.getElementById('userName');
             if (userNameSpan && currentUser) {
                 userNameSpan.textContent = currentUser.name;
             }
-            
+
             // Ocultar valores financeiros para usuário restrito
             const totalValueContainer = document.getElementById('totalValueContainer');
             const totalValue = document.getElementById('totalValue');
-            
+
             if (restricted) {
                 // Ocultar container de valor
                 if (totalValueContainer) {
@@ -995,7 +1024,7 @@
                 if (totalValue) {
                     totalValue.textContent = '🔒 OCULTO';
                 }
-                
+
                 // Desabilitar botão de novo item
                 const addItemBtn = document.getElementById('addItemBtn');
                 if (addItemBtn) {
@@ -1003,13 +1032,13 @@
                     addItemBtn.style.opacity = '0.5';
                     addItemBtn.title = 'Acesso restrito';
                 }
-                
+
                 // Ocultar a tab de cadastro no footer
                 const tabCadastroBtn = document.getElementById('tabCadastroBtn');
                 if (tabCadastroBtn) {
                     tabCadastroBtn.style.display = 'none';
                 }
-                
+
                 // Se estiver na tab de cadastro, voltar para dashboard
                 if (currentTab === 'cadastro') {
                     switchTab('dashboard');
@@ -1019,7 +1048,7 @@
                 if (totalValueContainer) {
                     totalValueContainer.style.display = 'block';
                 }
-                
+
                 // Habilitar botão de novo item
                 const addItemBtn = document.getElementById('addItemBtn');
                 if (addItemBtn) {
@@ -1027,7 +1056,7 @@
                     addItemBtn.style.opacity = '1';
                     addItemBtn.title = '';
                 }
-                
+
                 // Mostrar a tab de cadastro no footer
                 const tabCadastroBtn = document.getElementById('tabCadastroBtn');
                 if (tabCadastroBtn) {
@@ -1400,7 +1429,7 @@
 
         function clearCadastroForm() {
             if (!canCreateItems()) return;
-            
+
             if (document.getElementById('cadastroNome')) {
                 document.getElementById('cadastroNome').value = '';
                 document.getElementById('cadastroCodigo').value = '';
@@ -1687,17 +1716,17 @@
             try {
                 console.log('========== QR CODE DETECTADO ==========');
                 console.log('Conteúdo bruto:', data);
-                
+
                 stopScanner();
-                
+
                 if (data.includes('?item=')) {
                     const urlParams = new URLSearchParams(data.split('?')[1]);
                     let itemId = urlParams.get('item');
-                    
+
                     console.log('ID extraído da URL:', itemId);
-                    
+
                     showNotification('Buscando item...', 'info');
-                    
+
                     buscarItemLocal(itemId).then(toolLocal => {
                         if (toolLocal) {
                             console.log('✅ Item encontrado localmente!');
@@ -1713,7 +1742,7 @@
                     try {
                         const parsedData = JSON.parse(data);
                         const itemId = parsedData.id || parsedData.cod;
-                        
+
                         if (itemId) {
                             buscarItemLocal(itemId).then(toolLocal => {
                                 if (toolLocal) {
@@ -1742,20 +1771,20 @@
         function buscarItemLocal(itemId) {
             return new Promise((resolve) => {
                 const idToFind = isNaN(itemId) ? itemId : Number(itemId);
-                
+
                 let tool = tools.find(t => t.id == idToFind);
-                
+
                 if (tool) {
                     console.log('Item encontrado na memória');
                     resolve(tool);
                     return;
                 }
-                
+
                 if (db) {
                     const transaction = db.transaction(['tools'], 'readonly');
                     const store = transaction.objectStore('tools');
                     const request = store.get(idToFind);
-                    
+
                     request.onsuccess = () => {
                         if (request.result) {
                             console.log('Item encontrado no IndexedDB');
@@ -1766,7 +1795,7 @@
                             resolve(null);
                         }
                     };
-                    
+
                     request.onerror = () => {
                         console.error('Erro ao buscar no IndexedDB');
                         resolve(null);
@@ -1782,53 +1811,53 @@
                 showNotification('Sem conexão com o Supabase', 'error');
                 return;
             }
-            
+
             showLoader(true);
-            
+
             try {
                 console.log('🔍 Buscando item no Supabase. ID:', itemId);
-                
+
                 let query = supabaseClient.from('tools').select('*');
-                
+
                 if (!isNaN(itemId)) {
                     query = query.eq('id', Number(itemId));
                 } else {
                     query = query.eq('code', itemId);
                 }
-                
+
                 const { data, error } = await query.single();
-                
+
                 if (error) {
                     console.error('Erro na consulta:', error);
-                    
+
                     if (dadosAdicionais) {
                         console.log('Tentando busca alternativa com dados adicionais:', dadosAdicionais);
-                        
+
                         let fallbackQuery = supabaseClient.from('tools').select('*');
-                        
+
                         if (dadosAdicionais.codigo) {
                             fallbackQuery = fallbackQuery.eq('code', dadosAdicionais.codigo);
                         } else if (dadosAdicionais.nome) {
                             fallbackQuery = fallbackQuery.ilike('name', `%${dadosAdicionais.nome}%`);
                         }
-                        
+
                         const { data: fallbackData, error: fallbackError } = await fallbackQuery.maybeSingle();
-                        
+
                         if (fallbackData) {
                             await processarItemDoSupabase(fallbackData);
                             return;
                         }
                     }
-                    
+
                     throw error;
                 }
-                
+
                 if (data) {
                     await processarItemDoSupabase(data);
                 } else {
                     showNotification('Item não encontrado no Supabase', 'error');
                 }
-                
+
             } catch (error) {
                 console.error('❌ Erro ao buscar no Supabase:', error);
                 showNotification(`Erro: ${error.message}`, 'error');
@@ -1840,7 +1869,7 @@
         async function processarItemDoSupabase(item) {
             try {
                 console.log('✅ Item encontrado no Supabase:', item);
-                
+
                 const tool = {
                     id: item.id,
                     name: item.name,
@@ -1866,16 +1895,16 @@
                     updatedAt: item.updated_at,
                     qrCode: item.qr_code
                 };
-                
+
                 tools.push(tool);
                 await saveToIndexedDB(tools);
-                
+
                 showNotification('Item buscado da nuvem com sucesso!', 'success');
-                
+
                 setTimeout(() => {
                     showToolDetails(tool.id);
                 }, 500);
-                
+
             } catch (error) {
                 console.error('Erro ao processar item do Supabase:', error);
                 showNotification('Erro ao salvar item localmente', 'error');
@@ -2107,26 +2136,26 @@
             const listElement = document.getElementById('toolsList');
             const searchInput = document.getElementById('searchInput');
             const loadMoreBtn = document.getElementById('loadMoreBtn');
-            
+
             const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
-            
+
             let displayTools = [];
-            
+
             if (searchTerm) {
                 showLoader(true);
-                
+
                 try {
                     displayTools = await searchInIndexedDB(searchTerm);
-                    
-                    document.getElementById('toolsCount').textContent = 
+
+                    document.getElementById('toolsCount').textContent =
                         `${displayTools.length} de ${localStorage.getItem('totalItems') || tools.length} itens encontrados`;
-                    
+
                     if (displayTools.length === 0) {
                         listElement.innerHTML = '<p style="text-align: center; color: var(--gray-color); padding: 40px;">Nenhum item encontrado para "' + searchTerm + '"</p>';
                         showLoader(false);
                         return;
                     }
-                    
+
                 } catch (error) {
                     console.error('Erro na busca:', error);
                     showNotification('Erro ao buscar itens', 'error');
@@ -2134,27 +2163,27 @@
                 } finally {
                     showLoader(false);
                 }
-                
+
                 if (loadMoreBtn) {
                     loadMoreBtn.style.display = 'none';
                 }
-                
+
             } else {
                 displayTools = tools;
-                
+
                 if (loadMoreBtn) {
                     loadMoreBtn.style.display = 'none';
                 }
-                
+
                 if (displayTools.length === 0) {
                     listElement.innerHTML = '<p style="text-align: center; color: var(--gray-color); padding: 40px;">Nenhum item cadastrado</p>';
                     return;
                 }
-                
-                document.getElementById('toolsCount').textContent = 
+
+                document.getElementById('toolsCount').textContent =
                     `${displayTools.length} de ${displayTools.length} itens carregados`;
             }
-            
+
             renderToolList(displayTools);
         }
 
@@ -2242,7 +2271,7 @@
                 </div>`;
 
             document.getElementById('modalTitle').textContent = tool.name;
-            
+
             // Construir HTML dos detalhes
             let detailsHtml = `
                 ${imageHTML}
@@ -2325,7 +2354,7 @@
 
         function generateQRCode(toolId) {
             console.log('Gerando QR Code para:', toolId);
-            
+
             const tool = tools.find(t => t.id == toolId);
             if (!tool) {
                 console.error('Ferramenta não encontrada:', toolId);
@@ -2335,7 +2364,7 @@
 
             const baseUrl = window.location.origin + window.location.pathname;
             const linkUrl = `${baseUrl}?item=${tool.id}`;
-            
+
             console.log('Link gerado:', linkUrl);
 
             const qrModalBody = document.getElementById('qrModalBody');
@@ -2364,7 +2393,7 @@
                 try {
                     const container = document.getElementById('qrcodeContainer');
                     container.innerHTML = '';
-                    
+
                     new QRCode(container, {
                         text: linkUrl,
                         width: 200,
@@ -2373,10 +2402,10 @@
                         colorLight: "#ffffff",
                         correctLevel: QRCode.CorrectLevel.L
                     });
-                    
+
                     console.log('QR Code gerado com sucesso!');
 
-                    document.getElementById('downloadQRBtn').addEventListener('click', function() {
+                    document.getElementById('downloadQRBtn').addEventListener('click', function () {
                         const canvas = container.querySelector('canvas');
                         if (canvas) {
                             const link = document.createElement('a');
@@ -2391,7 +2420,7 @@
 
                 } catch (error) {
                     console.error('Erro ao gerar QR Code:', error);
-                    document.getElementById('qrcodeContainer').innerHTML = 
+                    document.getElementById('qrcodeContainer').innerHTML =
                         '<p style="color: var(--danger-color);">Erro ao gerar QR Code</p>';
                 }
             }, 100);
@@ -2403,22 +2432,22 @@
         function checkUrlForItem() {
             const urlParams = new URLSearchParams(window.location.search);
             const itemId = urlParams.get('item');
-            
+
             console.log('Verificando URL para item:', itemId);
-            
+
             if (itemId && currentUser) {
                 setTimeout(() => {
                     console.log('Buscando item da URL:', itemId);
-                    
+
                     buscarItemLocal(itemId).then(tool => {
                         if (tool) {
                             console.log('Item da URL encontrado:', tool);
                             showToolDetails(tool.id);
-                            
+
                             window.history.replaceState({}, document.title, window.location.pathname);
                         } else {
                             console.log('Item da URL não encontrado localmente');
-                            
+
                             if (supabaseClient) {
                                 showNotification('Buscando item da URL na nuvem...', 'info');
                                 buscarItemNoSupabase(itemId);
@@ -2482,15 +2511,15 @@
                 if (userBadge) {
                     userBadge.textContent =
                         currentUser.role === 'dev' ? 'DEV' :
-                        currentUser.role === 'almoxarife' ? 'ALMOXARIFE' :
-                        currentUser.role === 'admin' ? 'ADMIN' :
-                        currentUser.role === 'supervisor' ? 'SUPERVISOR' : 'OPERADOR';
+                            currentUser.role === 'almoxarife' ? 'ALMOXARIFE' :
+                                currentUser.role === 'admin' ? 'ADMIN' :
+                                    currentUser.role === 'supervisor' ? 'SUPERVISOR' : 'OPERADOR';
                 }
-                
+
                 // Aplicar restrições baseadas no usuário
                 applyRestrictions();
             }
-            
+
             checkUrlForItem();
         }
 
@@ -2503,9 +2532,9 @@
                 document.getElementById('menuUserEmail').textContent = currentUser.email;
                 document.getElementById('menuUserRole').textContent =
                     currentUser.role === 'dev' ? 'DEV' :
-                    currentUser.role === 'almoxarife' ? 'ALMOXARIFE' :
-                    currentUser.role === 'admin' ? 'ADMIN' :
-                    currentUser.role === 'supervisor' ? 'SUPERVISOR' : 'OPERADOR';
+                        currentUser.role === 'almoxarife' ? 'ALMOXARIFE' :
+                            currentUser.role === 'admin' ? 'ADMIN' :
+                                currentUser.role === 'supervisor' ? 'SUPERVISOR' : 'OPERADOR';
             }
         }
 
@@ -2744,7 +2773,7 @@
                     if (searchTimeout) {
                         clearTimeout(searchTimeout);
                     }
-                    
+
                     searchTimeout = setTimeout(() => {
                         updateToolsList();
                     }, 300);
