@@ -1029,7 +1029,7 @@
         // FUNÇÃO: Atualizar itens recentes
         function updateRecentItems() {
             const recentElement = document.getElementById('recentItems');
-            const recent = tools.slice(0, 5); // Primeiros 5 itens (mais recentes)
+            const recent = tools.slice(0, 5);
 
             if (recent.length === 0) {
                 recentElement.innerHTML = '<p style="text-align: center; color: var(--gray-color);">Nenhum item recente</p>';
@@ -1218,12 +1218,11 @@
                 </div>
             `;
 
-            // Adicionar eventos aos botões
             document.getElementById('salvarItemBtn').addEventListener('click', saveNewItem);
             document.getElementById('limparFormBtn').addEventListener('click', clearCadastroForm);
         }
 
-        // FUNÇÃO: Salvar novo item (VERSÃO ATUALIZADA COM QR CODE)
+        // FUNÇÃO: Salvar novo item
         async function saveNewItem() {
             const nome = document.getElementById('cadastroNome').value.trim();
             const codigo = document.getElementById('cadastroCodigo').value.trim();
@@ -1233,16 +1232,9 @@
                 return;
             }
 
-            // Gerar QR Code com os dados do item
-            const qrData = {
-                id: Date.now(),
-                nome: nome,
-                codigo: codigo,
-                patrimonio: document.getElementById('cadastroPatrimonio').value.trim() || '',
-                categoria: document.getElementById('cadastroCategoria').value || 'Outros',
-                status: document.getElementById('cadastroStatus').value,
-                localizacao: document.getElementById('cadastroLocalizacao').value || 'Almoxarifado Central'
-            };
+            // Gerar link para o QR Code
+            const baseUrl = window.location.origin + window.location.pathname;
+            const linkUrl = `${baseUrl}?item=${Date.now()}`;
 
             const novoItem = {
                 id: Date.now(),
@@ -1267,28 +1259,20 @@
                 dataCadastro: new Date().toISOString().split('T')[0],
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
-                qrCode: JSON.stringify(qrData) // <-- NOVO: Salvar QR Code como string JSON
+                qrCode: linkUrl
             };
 
             try {
-                // Adicionar localmente
                 tools.unshift(novoItem);
-
-                // Salvar no IndexedDB
                 await saveToIndexedDB(tools);
 
-                // Salvar no Supabase se conectado
                 if (supabaseClient) {
                     await saveItemToSupabase(novoItem);
                 }
 
                 showNotification('Item cadastrado com sucesso!', 'success');
                 clearCadastroForm();
-
-                // Atualizar interface
                 updateUI();
-
-                // Voltar para dashboard
                 switchTab('dashboard');
 
             } catch (error) {
@@ -1320,7 +1304,7 @@
             }
         }
 
-        // FUNÇÃO: Salvar item no Supabase (VERSÃO ATUALIZADA COM QR CODE)
+        // FUNÇÃO: Salvar item no Supabase
         async function saveItemToSupabase(item) {
             try {
                 const itemData = {
@@ -1345,7 +1329,7 @@
                     data_cadastro: item.dataCadastro,
                     created_at: item.createdAt,
                     updated_at: item.updatedAt,
-                    qr_code: item.qrCode // <-- NOVO: Enviar QR Code para o Supabase
+                    qr_code: item.qrCode
                 };
 
                 const { error } = await supabaseClient
@@ -1362,7 +1346,7 @@
         }
 
         // ============================================
-        // FUNÇÃO DE SINCRONIZAÇÃO ATUALIZADA (para incluir qr_code)
+        // FUNÇÃO DE SINCRONIZAÇÃO
         // ============================================
         async function fetchAllFromSupabase() {
             try {
@@ -1443,13 +1427,10 @@
                     dataCadastro: item.data_cadastro,
                     createdAt: item.created_at,
                     updatedAt: item.updated_at,
-                    qrCode: item.qr_code // <-- NOVO: Incluir qr_code na conversão
+                    qrCode: item.qr_code
                 }));
 
-                // Salvar TODOS os itens no IndexedDB
                 await saveToIndexedDB(convertedTools);
-
-                // Carregar TODOS os itens para memória
                 tools = await loadFromIndexedDB(999999);
 
                 updateUI();
@@ -1476,19 +1457,17 @@
         }
 
         // ============================================
-        // SCANNER QR CODE
+        // FUNÇÕES DO SCANNER QR CODE
         // ============================================
         async function startScanner() {
             try {
                 showNotification('Iniciando scanner...', 'info');
 
-                // Verificar permissão de câmera
                 if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
                     showNotification('Câmera não disponível neste dispositivo', 'error');
                     return;
                 }
 
-                // Solicitar acesso à câmera traseira
                 videoStream = await navigator.mediaDevices.getUserMedia({
                     video: {
                         facingMode: 'environment',
@@ -1497,7 +1476,6 @@
                     }
                 });
 
-                // Criar elemento de vídeo
                 const video = document.createElement('video');
                 video.id = 'scanner-video';
                 video.style.width = '100%';
@@ -1507,7 +1485,6 @@
                 video.setAttribute('autoplay', 'true');
                 video.setAttribute('muted', 'true');
 
-                // Criar overlay de scanner
                 const overlay = document.createElement('div');
                 overlay.className = 'scanner-overlay';
                 overlay.innerHTML = `
@@ -1516,16 +1493,13 @@
                     </div>
                 `;
 
-                // Limpar container e adicionar elementos
                 const container = document.getElementById('scannerContainer');
                 container.innerHTML = '';
                 container.appendChild(video);
                 container.appendChild(overlay);
 
-                // Configurar vídeo
                 video.srcObject = videoStream;
 
-                // Aguardar o vídeo carregar
                 await new Promise((resolve, reject) => {
                     video.onloadedmetadata = () => {
                         video.play()
@@ -1534,16 +1508,12 @@
                     };
                 });
 
-                // Atualizar botões
                 document.getElementById('startScannerBtn').style.display = 'none';
                 document.getElementById('stopScannerBtn').style.display = 'block';
                 document.getElementById('scannerResult').style.display = 'none';
 
                 scannerActive = true;
-
-                // Iniciar loop de escaneamento
                 startScanningLoop(video);
-
                 showNotification('Scanner ativo. Aponte para um QR Code.', 'success');
 
             } catch (error) {
@@ -1565,30 +1535,23 @@
             const canvas = document.getElementById('qr-canvas');
             const context = canvas.getContext('2d');
 
-            // Limpar qualquer intervalo anterior
             if (scanningInterval) {
                 clearInterval(scanningInterval);
             }
 
-            // Função de escaneamento
             scanningInterval = setInterval(() => {
                 if (!scannerActive || !video.readyState === video.HAVE_ENOUGH_DATA) {
                     return;
                 }
 
-                // Configurar tamanho do canvas baseado no vídeo
                 if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
                     canvas.width = video.videoWidth;
                     canvas.height = video.videoHeight;
                 }
 
-                // Desenhar o frame do vídeo no canvas
                 context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-                // Obter dados da imagem
                 const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
 
-                // Tentar decodificar QR Code
                 try {
                     const code = jsQR(imageData.data, imageData.width, imageData.height, {
                         inversionAttempts: "dontInvert",
@@ -1603,74 +1566,62 @@
             }, 250);
         }
 
+        // ============================================
+        // FUNÇÃO PRINCIPAL DO QR CODE - COM BUSCA NO SUPABASE
+        // ============================================
         function handleQRCodeDetected(data) {
             try {
-                console.log('QR Code detectado:', data);
-
-                // Parar o scanner imediatamente
+                console.log('========== QR CODE DETECTADO ==========');
+                console.log('Conteúdo bruto:', data);
+                
+                // Parar o scanner
                 stopScanner();
-
+                
                 // Verificar se é um link do nosso sistema
                 if (data.includes('?item=')) {
-                    // Extrair o ID do item da URL
+                    // Extrair o ID da URL
                     const urlParams = new URLSearchParams(data.split('?')[1]);
-                    const itemId = urlParams.get('item');
-
-                    if (itemId) {
-                        showNotification('Item detectado! Abrindo...', 'success');
-
-                        // Converter para número se necessário
-                        const idToFind = isNaN(itemId) ? itemId : Number(itemId);
-
-                        // Procurar o item
-                        const tool = tools.find(t => t.id == idToFind);
-
-                        if (tool) {
-                            // Mostrar detalhes do item
-                            setTimeout(() => {
-                                showToolDetails(tool.id);
-                            }, 500); // Pequeno delay para garantir que o scanner parou
+                    let itemId = urlParams.get('item');
+                    
+                    console.log('ID extraído da URL:', itemId);
+                    
+                    showNotification('Buscando item...', 'info');
+                    
+                    // Primeiro, tentar buscar localmente (mais rápido)
+                    buscarItemLocal(itemId).then(toolLocal => {
+                        if (toolLocal) {
+                            console.log('✅ Item encontrado localmente!');
+                            showToolDetails(toolLocal.id);
                         } else {
-                            showNotification('Item não encontrado no sistema', 'error');
-
-                            // Mostrar o link escaneado
-                            document.getElementById('scannerResult').style.display = 'block';
-                            document.getElementById('scannedData').innerHTML = `
-                        <div style="margin-bottom: 10px;">
-                            <strong style="color: var(--warning-color);">⚠ Item não encontrado</strong>
-                        </div>
-                        <p><strong>Link escaneado:</strong></p>
-                        <div style="background: white; padding: 10px; border-radius: 5px; word-break: break-all;">
-                            ${data}
-                        </div>
-                        <p style="margin-top: 10px;">ID do item: ${itemId}</p>
-                    `;
+                            console.log('❌ Item não encontrado localmente, buscando no Supabase...');
+                            showNotification('Item não está no cache. Buscando na nuvem...', 'warning');
+                            
+                            // Buscar no Supabase
+                            buscarItemNoSupabase(itemId);
                         }
-                    }
+                    });
                 }
-                // Verificar se é JSON com ID (compatibilidade com QR Codes antigos)
-                else if (data.startsWith('{') && data.includes('"id"')) {
+                // Verificar se é JSON com ID (QR Code antigo)
+                else if (data.startsWith('{') && (data.includes('"id"') || data.includes('"cod"'))) {
                     try {
                         const parsedData = JSON.parse(data);
-                        if (parsedData.id) {
-                            showNotification('QR Code antigo detectado! Abrindo...', 'info');
-
-                            const tool = tools.find(t => t.id == parsedData.id);
-                            if (tool) {
-                                setTimeout(() => {
-                                    showToolDetails(tool.id);
-                                }, 500);
-                            } else {
-                                showNotification('Item não encontrado', 'error');
-                            }
+                        const itemId = parsedData.id || parsedData.cod;
+                        
+                        if (itemId) {
+                            buscarItemLocal(itemId).then(toolLocal => {
+                                if (toolLocal) {
+                                    showToolDetails(toolLocal.id);
+                                } else {
+                                    showNotification('Buscando item antigo na nuvem...', 'info');
+                                    buscarItemNoSupabase(itemId, parsedData);
+                                }
+                            });
                         }
                     } catch (e) {
-                        // Não é JSON válido
                         showTextQRCode(data);
                     }
                 }
                 else {
-                    // É texto simples
                     showTextQRCode(data);
                 }
 
@@ -1681,115 +1632,175 @@
             }
         }
 
-        // Função auxiliar para mostrar texto genérico
+        // Função para buscar item localmente
+        function buscarItemLocal(itemId) {
+            return new Promise((resolve) => {
+                // Converter para número se possível
+                const idToFind = isNaN(itemId) ? itemId : Number(itemId);
+                
+                // Buscar na memória primeiro
+                let tool = tools.find(t => t.id == idToFind);
+                
+                if (tool) {
+                    console.log('Item encontrado na memória');
+                    resolve(tool);
+                    return;
+                }
+                
+                // Se não achou na memória, buscar no IndexedDB
+                if (db) {
+                    const transaction = db.transaction(['tools'], 'readonly');
+                    const store = transaction.objectStore('tools');
+                    const request = store.get(idToFind);
+                    
+                    request.onsuccess = () => {
+                        if (request.result) {
+                            console.log('Item encontrado no IndexedDB');
+                            // Atualizar a memória
+                            tools.push(request.result);
+                            resolve(request.result);
+                        } else {
+                            console.log('Item não encontrado no IndexedDB');
+                            resolve(null);
+                        }
+                    };
+                    
+                    request.onerror = () => {
+                        console.error('Erro ao buscar no IndexedDB');
+                        resolve(null);
+                    };
+                } else {
+                    resolve(null);
+                }
+            });
+        }
+
+        // Função para buscar item no Supabase
+        async function buscarItemNoSupabase(itemId, dadosAdicionais = null) {
+            if (!supabaseClient) {
+                showNotification('Sem conexão com o Supabase', 'error');
+                return;
+            }
+            
+            showLoader(true);
+            
+            try {
+                console.log('🔍 Buscando item no Supabase. ID:', itemId);
+                
+                // Preparar a consulta
+                let query = supabaseClient.from('tools').select('*');
+                
+                // Verificar se itemId é número (ID) ou texto (código)
+                if (!isNaN(itemId)) {
+                    query = query.eq('id', Number(itemId));
+                } else {
+                    query = query.eq('code', itemId);
+                }
+                
+                const { data, error } = await query.single();
+                
+                if (error) {
+                    console.error('Erro na consulta:', error);
+                    
+                    // Se não encontrou por ID, tentar por outros campos
+                    if (dadosAdicionais) {
+                        console.log('Tentando busca alternativa com dados adicionais:', dadosAdicionais);
+                        
+                        let fallbackQuery = supabaseClient.from('tools').select('*');
+                        
+                        if (dadosAdicionais.codigo) {
+                            fallbackQuery = fallbackQuery.eq('code', dadosAdicionais.codigo);
+                        } else if (dadosAdicionais.nome) {
+                            fallbackQuery = fallbackQuery.ilike('name', `%${dadosAdicionais.nome}%`);
+                        }
+                        
+                        const { data: fallbackData, error: fallbackError } = await fallbackQuery.maybeSingle();
+                        
+                        if (fallbackData) {
+                            await processarItemDoSupabase(fallbackData);
+                            return;
+                        }
+                    }
+                    
+                    throw error;
+                }
+                
+                if (data) {
+                    await processarItemDoSupabase(data);
+                } else {
+                    showNotification('Item não encontrado no Supabase', 'error');
+                }
+                
+            } catch (error) {
+                console.error('❌ Erro ao buscar no Supabase:', error);
+                showNotification(`Erro: ${error.message}`, 'error');
+            } finally {
+                showLoader(false);
+            }
+        }
+
+        // Função para processar item do Supabase
+        async function processarItemDoSupabase(item) {
+            try {
+                console.log('✅ Item encontrado no Supabase:', item);
+                
+                // Converter para o formato do sistema
+                const tool = {
+                    id: item.id,
+                    name: item.name,
+                    code: item.code,
+                    patrimonio: item.patrimonio,
+                    ncm: item.ncm,
+                    category: item.category,
+                    status: item.status,
+                    location: item.location,
+                    condition: item.condition,
+                    notaFiscal: item.nota_fiscal,
+                    unidade: item.unidade,
+                    preco: item.preco,
+                    quantidade: item.quantidade,
+                    estoqueMinimo: item.estoque_minimo,
+                    estoqueMaximo: item.estoque_maximo,
+                    description: item.description,
+                    observations: item.observations,
+                    image: item.image_url,
+                    usuarioCadastro: item.usuario_cadastro,
+                    dataCadastro: item.data_cadastro,
+                    createdAt: item.created_at,
+                    updatedAt: item.updated_at,
+                    qrCode: item.qr_code
+                };
+                
+                // Adicionar ao cache local
+                tools.push(tool);
+                
+                // Salvar no IndexedDB
+                await saveToIndexedDB(tools);
+                
+                showNotification('Item buscado da nuvem com sucesso!', 'success');
+                
+                // Mostrar detalhes do item
+                setTimeout(() => {
+                    showToolDetails(tool.id);
+                }, 500);
+                
+            } catch (error) {
+                console.error('Erro ao processar item do Supabase:', error);
+                showNotification('Erro ao salvar item localmente', 'error');
+            }
+        }
+
         function showTextQRCode(data) {
             document.getElementById('scannerResult').style.display = 'block';
             document.getElementById('scannedData').innerHTML = `
-        <div style="margin-bottom: 10px;">
-            <strong style="color: var(--warning-color);">⚠ Texto Detectado</strong>
-        </div>
-        <p><strong>Conteúdo:</strong></p>
-        <div style="background: white; padding: 10px; border-radius: 5px; word-break: break-all;">
-            ${data}
-        </div>
-    `;
-        }
-        function showScannerResult(data) {
-            const resultContainer = document.getElementById('scannerResult');
-            const dataContainer = document.getElementById('scannedData');
-
-            let html = '';
-
-            if (data.id) {
-                // É um item do sistema
-                html = `
-                    <div style="margin-bottom: 10px;">
-                        <strong style="color: var(--success-color);">✓ QR Code Válido</strong>
-                    </div>
-                    <p><strong>Item ID:</strong> ${data.id}</p>
-                    <p><strong>Nome:</strong> ${data.nome || 'N/A'}</p>
-                    <p><strong>Código:</strong> ${data.codigo || 'N/A'}</p>
-                    <p><strong>Patrimônio:</strong> ${data.patrimonio || 'N/A'}</p>
-                    <p><strong>Categoria:</strong> ${data.categoria || 'N/A'}</p>
-                    <p><strong>Status:</strong> ${data.status || 'N/A'}</p>
-                    <p><strong>Localização:</strong> ${data.localizacao || 'N/A'}</p>
-                `;
-            } else if (data.texto) {
-                // É texto simples
-                html = `
-                    <div style="margin-bottom: 10px;">
-                        <strong style="color: var(--warning-color);">⚠ Texto Detectado</strong>
-                    </div>
-                    <p><strong>Conteúdo:</strong></p>
-                    <div style="background: white; padding: 10px; border-radius: 5px; margin-top: 5px;">
-                        ${data.texto}
-                    </div>
-                `;
-            }
-
-            dataContainer.innerHTML = html;
-            resultContainer.style.display = 'block';
-
-            // Scroll para o resultado
-            resultContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-
-            // Beep sonoro
-            playScanSound();
-        }
-
-        function playScanSound() {
-            try {
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const oscillator = audioContext.createOscillator();
-                const gainNode = audioContext.createGain();
-
-                oscillator.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-
-                oscillator.frequency.value = 800;
-                oscillator.type = 'sine';
-
-                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
-
-                oscillator.start(audioContext.currentTime);
-                oscillator.stop(audioContext.currentTime + 0.1);
-            } catch (e) {
-                console.log('Audio não disponível');
-            }
-        }
-
-        function stopScanningTemporarily() {
-            scannerActive = false;
-
-            if (scanningInterval) {
-                clearInterval(scanningInterval);
-                scanningInterval = null;
-            }
-
-            showNotification('QR Code detectado!', 'success');
-
-            document.getElementById('scanAgainBtn').onclick = function () {
-                resumeScanner();
-            };
-
-            document.getElementById('viewScannedItemBtn').onclick = function () {
-                if (currentScannedData && currentScannedData.id) {
-                    showToolFromQR(currentScannedData.id);
-                }
-            };
-        }
-
-        function resumeScanner() {
-            scannerActive = true;
-            document.getElementById('scannerResult').style.display = 'none';
-
-            const video = document.getElementById('scanner-video');
-            if (video) {
-                startScanningLoop(video);
-            }
-
-            showNotification('Scanner reiniciado. Continue escaneando.', 'info');
+                <div style="margin-bottom: 10px;">
+                    <strong style="color: var(--warning-color);">⚠ Texto Detectado</strong>
+                </div>
+                <p><strong>Conteúdo:</strong></p>
+                <div style="background: white; padding: 10px; border-radius: 5px; word-break: break-all;">
+                    ${data}
+                </div>
+            `;
         }
 
         function stopScanner() {
@@ -1806,8 +1817,6 @@
             }
 
             resetScannerUI();
-
-            showNotification('Scanner parado', 'warning');
         }
 
         function resetScannerUI() {
@@ -1823,17 +1832,6 @@
             document.getElementById('startScannerBtn').style.display = 'block';
             document.getElementById('stopScannerBtn').style.display = 'none';
             document.getElementById('scannerResult').style.display = 'none';
-        }
-
-        function showToolFromQR(toolId) {
-            const tool = tools.find(t => t.id == toolId || t.code === toolId);
-
-            if (tool) {
-                stopScanner();
-                showToolDetails(tool.id ? tool.id : tool.code);
-            } else {
-                showNotification('Item não encontrado no cache local', 'error');
-            }
         }
 
         // ============================================
@@ -1875,7 +1873,6 @@
                         store.createIndex('category', 'category', { unique: false });
                         store.createIndex('status', 'status', { unique: false });
                         store.createIndex('updatedAt', 'updatedAt', { unique: false });
-                        // Nota: qr_code será armazenado automaticamente como parte do objeto
                     }
                 };
             });
@@ -1951,7 +1948,6 @@
             });
         }
 
-        // Função para buscar no IndexedDB por termo de busca
         function searchInIndexedDB(searchTerm) {
             return new Promise((resolve, reject) => {
                 if (!db) {
@@ -1969,7 +1965,6 @@
                     const cursor = event.target.result;
                     if (cursor) {
                         const tool = cursor.value;
-                        // Verificar se o termo corresponde a qualquer campo relevante
                         if ((tool.name && tool.name.toLowerCase().includes(term)) ||
                             (tool.code && tool.code.toLowerCase().includes(term)) ||
                             (tool.patrimonio && tool.patrimonio.toLowerCase().includes(term)) ||
@@ -1983,25 +1978,16 @@
                         resolve(results);
                     }
                 };
-
-                request.onerror = () => {
-                    reject(request.error);
-                };
             });
         }
 
         // ============================================
-        // FUNÇÕES DE INTERFACE CORRIGIDAS
+        // FUNÇÕES DE INTERFACE
         // ============================================
-
         function updateUI() {
-            // Buscar total salvo no banco de dados (nuvem)
             const totalInDB = localStorage.getItem('totalItems') || tools.length;
-
-            // tools.length agora tem TODOS os itens
             document.getElementById('totalItems').textContent = `${tools.length}/${totalInDB}`;
 
-            // Atualizar valor total (baseado em TODOS os itens)
             const totalValue = tools.reduce((sum, tool) => {
                 const preco = parseFloat(tool.preco) || 0;
                 const quantidade = parseInt(tool.quantidade) || 1;
@@ -2014,11 +2000,9 @@
                     currency: 'BRL'
                 }).format(totalValue);
 
-            // Atualizar estatísticas
             updateStatusStats();
             updateRecentItems();
 
-            // Atualizar lista se estiver na tab certa
             if (currentTab === 'catalogo') {
                 updateToolsList();
             }
@@ -2028,29 +2012,26 @@
             const listElement = document.getElementById('toolsList');
             const searchInput = document.getElementById('searchInput');
             const loadMoreBtn = document.getElementById('loadMoreBtn');
-
+            
             const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
-
+            
             let displayTools = [];
-
+            
             if (searchTerm) {
-                // Mostrar loader durante a busca
                 showLoader(true);
-
+                
                 try {
-                    // Buscar em TODOS os itens do IndexedDB
                     displayTools = await searchInIndexedDB(searchTerm);
-
-                    // Atualizar contagem
-                    document.getElementById('toolsCount').textContent =
+                    
+                    document.getElementById('toolsCount').textContent = 
                         `${displayTools.length} de ${localStorage.getItem('totalItems') || tools.length} itens encontrados`;
-
+                    
                     if (displayTools.length === 0) {
                         listElement.innerHTML = '<p style="text-align: center; color: var(--gray-color); padding: 40px;">Nenhum item encontrado para "' + searchTerm + '"</p>';
                         showLoader(false);
                         return;
                     }
-
+                    
                 } catch (error) {
                     console.error('Erro na busca:', error);
                     showNotification('Erro ao buscar itens', 'error');
@@ -2058,36 +2039,30 @@
                 } finally {
                     showLoader(false);
                 }
-
-                // Esconder botão "Carregar mais" durante a busca
+                
                 if (loadMoreBtn) {
                     loadMoreBtn.style.display = 'none';
                 }
-
+                
             } else {
-                // Sem busca: mostrar TODOS os itens da memória
                 displayTools = tools;
-
-                // Esconder botão "Carregar mais" pois já temos todos
+                
                 if (loadMoreBtn) {
                     loadMoreBtn.style.display = 'none';
                 }
-
+                
                 if (displayTools.length === 0) {
                     listElement.innerHTML = '<p style="text-align: center; color: var(--gray-color); padding: 40px;">Nenhum item cadastrado</p>';
                     return;
                 }
-
-                // Atualizar contagem
-                document.getElementById('toolsCount').textContent =
+                
+                document.getElementById('toolsCount').textContent = 
                     `${displayTools.length} de ${displayTools.length} itens carregados`;
             }
-
-            // Renderizar os resultados
+            
             renderToolList(displayTools);
         }
 
-        // Função auxiliar para renderizar a lista de ferramentas
         function renderToolList(toolsToRender) {
             const listElement = document.getElementById('toolsList');
 
@@ -2098,39 +2073,38 @@
                     `<i class="fas fa-tools"></i>`;
 
                 html += `
-            <div class="card" style="margin-bottom: 10px; padding: 15px;" data-id="${tool.id}">
-                <div style="display: flex; align-items: start; margin-bottom: 10px;">
-                    <div class="thumbnail" style="margin-right: 12px; flex-shrink: 0;">
-                        ${thumbnailHTML}
-                    </div>
-                    <div style="flex: 1;">
-                        <div style="font-weight: 500; font-size: 16px;">${tool.name}</div>
-                        <div style="font-size: 14px; color: var(--gray-color);">${tool.code}${tool.patrimonio ? ' | ' + tool.patrimonio : ''}</div>
-                        <div style="display: flex; align-items: center; gap: 8px; margin-top: 5px; flex-wrap: wrap;">
-                            <span style="font-size: 12px; padding: 3px 8px; background: ${getStatusColor(tool.status)}20; color: ${getStatusColor(tool.status)}; border-radius: 12px;">
-                                ${tool.status}
-                            </span>
-                            <span style="font-size: 12px; color: var(--gray-color);">${tool.location}</span>
-                            <span style="font-size: 12px; color: var(--gray-color);">Qtd: ${tool.quantidade || 1}</span>
+                    <div class="card" style="margin-bottom: 10px; padding: 15px;" data-id="${tool.id}">
+                        <div style="display: flex; align-items: start; margin-bottom: 10px;">
+                            <div class="thumbnail" style="margin-right: 12px; flex-shrink: 0;">
+                                ${thumbnailHTML}
+                            </div>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 500; font-size: 16px;">${tool.name}</div>
+                                <div style="font-size: 14px; color: var(--gray-color);">${tool.code}${tool.patrimonio ? ' | ' + tool.patrimonio : ''}</div>
+                                <div style="display: flex; align-items: center; gap: 8px; margin-top: 5px; flex-wrap: wrap;">
+                                    <span style="font-size: 12px; padding: 3px 8px; background: ${getStatusColor(tool.status)}20; color: ${getStatusColor(tool.status)}; border-radius: 12px;">
+                                        ${tool.status}
+                                    </span>
+                                    <span style="font-size: 12px; color: var(--gray-color);">${tool.location}</span>
+                                    <span style="font-size: 12px; color: var(--gray-color);">Qtd: ${tool.quantidade || 1}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="tool-actions">
+                            <button class="action-btn view" data-id="${tool.id}">
+                                <i class="fas fa-eye"></i> Ver
+                            </button>
+                            <button class="action-btn qr" data-id="${tool.id}">
+                                <i class="fas fa-qrcode"></i> QR Code
+                            </button>
                         </div>
                     </div>
-                </div>
-                
-                <div class="tool-actions">
-                    <button class="action-btn view" data-id="${tool.id}">
-                        <i class="fas fa-eye"></i> Ver
-                    </button>
-                    <button class="action-btn qr" data-id="${tool.id}">
-                        <i class="fas fa-qrcode"></i> QR Code
-                    </button>
-                </div>
-            </div>
-        `;
+                `;
             });
 
             listElement.innerHTML = html;
 
-            // Adicionar eventos aos botões
             document.querySelectorAll('.action-btn.view').forEach(btn => {
                 btn.addEventListener('click', function (e) {
                     e.stopPropagation();
@@ -2147,7 +2121,6 @@
                 });
             });
 
-            // Clique no card inteiro também abre detalhes
             document.querySelectorAll('.card[data-id]').forEach(card => {
                 card.addEventListener('click', function (e) {
                     if (!e.target.closest('.action-btn')) {
@@ -2220,10 +2193,8 @@
                 </div>
             `;
 
-            // Mostrar modal
             document.getElementById('itemModal').style.display = 'flex';
 
-            // Eventos do modal
             document.getElementById('modalQRBtn').addEventListener('click', function () {
                 const id = this.getAttribute('data-id');
                 closeItemModal();
@@ -2235,7 +2206,7 @@
 
         function generateQRCode(toolId) {
             console.log('Gerando QR Code para:', toolId);
-
+            
             const tool = tools.find(t => t.id == toolId);
             if (!tool) {
                 console.error('Ferramenta não encontrada:', toolId);
@@ -2243,65 +2214,52 @@
                 return;
             }
 
-            // Criar um link profundo para o aplicativo
-            // Formato: fwtools://item/{id}
-            // Ou se preferir um link web: https://seusite.com/item/{id}
+            // Criar link para o QR Code
             const baseUrl = window.location.origin + window.location.pathname;
-            const linkUrl = `${baseUrl}?item=${Date.now()}`;
-
-            const novoItem = {
-                // ... outros campos ...
-                qrCode: linkUrl // Salvar o link em vez do JSON
-            };
-            // QR Code compacto com apenas o link
-            const qrContent = linkUrl;
-
+            const linkUrl = `${baseUrl}?item=${tool.id}`;
+            
             console.log('Link gerado:', linkUrl);
-            console.log('Tamanho do QR Code:', qrContent.length, 'caracteres');
 
             // Preparar o modal
             const qrModalBody = document.getElementById('qrModalBody');
             qrModalBody.innerHTML = `
-        <div style="margin-bottom: 20px;">
-            <h4>${tool.name}</h4>
-            <p style="color: var(--gray-color); font-size: 14px;">${tool.code}</p>
-        </div>
-        <div id="qrcodeContainer" style="margin: 20px auto; text-align: center;"></div>
-        <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px;">
-            <button id="downloadQRBtn" class="mobile-btn" style="background: var(--secondary-color); color: white;">
-                <i class="fas fa-download"></i> Baixar QR Code
-            </button>
-            <button id="closeQRBtn" class="mobile-btn" style="background: var(--gray-color); color: white;">
-                <i class="fas fa-times"></i> Fechar
-            </button>
-        </div>
-        <p style="font-size: 10px; color: var(--gray-color); margin-top: 10px; word-break: break-all;">
-            Link: ${linkUrl}
-        </p>
-    `;
+                <div style="margin-bottom: 20px;">
+                    <h4>${tool.name}</h4>
+                    <p style="color: var(--gray-color); font-size: 14px;">${tool.code}</p>
+                </div>
+                <div id="qrcodeContainer" style="margin: 20px auto; text-align: center;"></div>
+                <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px;">
+                    <button id="downloadQRBtn" class="mobile-btn" style="background: var(--secondary-color); color: white;">
+                        <i class="fas fa-download"></i> Baixar QR Code
+                    </button>
+                    <button id="closeQRBtn" class="mobile-btn" style="background: var(--gray-color); color: white;">
+                        <i class="fas fa-times"></i> Fechar
+                    </button>
+                </div>
+                <p style="font-size: 10px; color: var(--gray-color); margin-top: 10px; word-break: break-all;">
+                    Link: ${linkUrl}
+                </p>
+            `;
 
-            // Mostrar o modal
             document.getElementById('qrModal').style.display = 'flex';
 
-            // Gerar QR Code
             setTimeout(() => {
                 try {
                     const container = document.getElementById('qrcodeContainer');
                     container.innerHTML = '';
-
+                    
                     new QRCode(container, {
-                        text: qrContent,
+                        text: linkUrl,
                         width: 200,
                         height: 200,
                         colorDark: "#000000",
                         colorLight: "#ffffff",
                         correctLevel: QRCode.CorrectLevel.L
                     });
-
+                    
                     console.log('QR Code gerado com sucesso!');
 
-                    // Evento de download
-                    document.getElementById('downloadQRBtn').addEventListener('click', function () {
+                    document.getElementById('downloadQRBtn').addEventListener('click', function() {
                         const canvas = container.querySelector('canvas');
                         if (canvas) {
                             const link = document.createElement('a');
@@ -2316,36 +2274,44 @@
 
                 } catch (error) {
                     console.error('Erro ao gerar QR Code:', error);
-                    document.getElementById('qrcodeContainer').innerHTML =
+                    document.getElementById('qrcodeContainer').innerHTML = 
                         '<p style="color: var(--danger-color);">Erro ao gerar QR Code</p>';
                 }
             }, 100);
+        }
 
-
-            // Eventos dos botões
-            setTimeout(() => {
-                const downloadBtn = document.getElementById('downloadQRBtn');
-                const closeBtn = document.getElementById('closeQRBtn');
-
-                if (downloadBtn) {
-                    downloadBtn.addEventListener('click', function () {
-                        const canvas = document.querySelector('#qrcodeCanvas canvas');
-                        if (canvas) {
-                            const link = document.createElement('a');
-                            link.download = `QRCode_${tool.code}_${tool.id}.png`;
-                            link.href = canvas.toDataURL('image/png');
-                            link.click();
-                            showNotification('QR Code baixado!', 'success');
+        // ============================================
+        // FUNÇÕES DE VERIFICAÇÃO DE URL
+        // ============================================
+        function checkUrlForItem() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const itemId = urlParams.get('item');
+            
+            console.log('Verificando URL para item:', itemId);
+            
+            if (itemId && currentUser) {
+                setTimeout(() => {
+                    console.log('Buscando item da URL:', itemId);
+                    
+                    buscarItemLocal(itemId).then(tool => {
+                        if (tool) {
+                            console.log('Item da URL encontrado:', tool);
+                            showToolDetails(tool.id);
+                            
+                            // Limpar a URL para não abrir novamente
+                            window.history.replaceState({}, document.title, window.location.pathname);
                         } else {
-                            showNotification('Erro ao baixar QR Code', 'error');
+                            console.log('Item da URL não encontrado localmente');
+                            
+                            // Tentar buscar no Supabase
+                            if (supabaseClient) {
+                                showNotification('Buscando item da URL na nuvem...', 'info');
+                                buscarItemNoSupabase(itemId);
+                            }
                         }
                     });
-                }
-
-                if (closeBtn) {
-                    closeBtn.addEventListener('click', closeQRModal);
-                }
-            }, 200);
+                }, 2000);
+            }
         }
 
         // ============================================
@@ -2355,7 +2321,6 @@
             const email = document.getElementById('loginEmail').value.trim();
             const password = document.getElementById('loginPassword').value;
 
-            // Dados de usuários
             const users = {
                 'fabio@fwcompany.com.br': {
                     password: 'FabioFW123@',
@@ -2402,12 +2367,14 @@
                 if (userBadge) {
                     userBadge.textContent =
                         currentUser.role === 'dev' ? 'DEV' :
-                            currentUser.role === 'almoxarife' ? 'ALMOXARIFE' :
-                                currentUser.role === 'admin' ? 'ADMIN' :
-                                    currentUser.role === 'supervisor' ? 'SUPERVISOR' : 'OPERADOR';
+                        currentUser.role === 'almoxarife' ? 'ALMOXARIFE' :
+                        currentUser.role === 'admin' ? 'ADMIN' :
+                        currentUser.role === 'supervisor' ? 'SUPERVISOR' : 'OPERADOR';
                 }
             }
             
+            // Verificar se há item na URL
+            checkUrlForItem();
         }
 
         function openMenu() {
@@ -2419,9 +2386,9 @@
                 document.getElementById('menuUserEmail').textContent = currentUser.email;
                 document.getElementById('menuUserRole').textContent =
                     currentUser.role === 'dev' ? 'DEV' :
-                        currentUser.role === 'almoxarife' ? 'ALMOXARIFE' :
-                            currentUser.role === 'admin' ? 'ADMIN' :
-                                currentUser.role === 'supervisor' ? 'SUPERVISOR' : 'OPERADOR';
+                    currentUser.role === 'almoxarife' ? 'ALMOXARIFE' :
+                    currentUser.role === 'admin' ? 'ADMIN' :
+                    currentUser.role === 'supervisor' ? 'SUPERVISOR' : 'OPERADOR';
             }
         }
 
@@ -2523,7 +2490,6 @@
             }
         }
 
-        // Funções auxiliares do menu
         function showUserProfile() {
             alert(`Perfil do Usuário:\n\nNome: ${currentUser.name}\nEmail: ${currentUser.email}\nFunção: ${currentUser.role}`);
             closeMenu();
@@ -2546,7 +2512,7 @@
 
         function showAbout() {
             closeMenu();
-            alert('Sistema de Ferramentas Mobile v1.0.5\n\nDesenvolvido por Fábio Mendes Rodrigues.\n\n© 2026 FW Company');
+            alert('Sistema de Ferramentas Mobile v2.0\n\nDesenvolvido por Fábio Mendes Rodrigues.\n\n© 2026 FW Company');
         }
 
         function showHelp() {
@@ -2566,13 +2532,11 @@
         function setupEventListeners() {
             console.log('Configurando eventos...');
 
-            // Login
             const loginBtn = document.getElementById('loginBtn');
             if (loginBtn) {
                 loginBtn.addEventListener('click', handleLogin);
             }
 
-            // Menu
             const menuBtn = document.getElementById('menuBtn');
             if (menuBtn) {
                 menuBtn.addEventListener('click', openMenu);
@@ -2583,7 +2547,6 @@
                 menuOverlay.addEventListener('click', closeMenu);
             }
 
-            // Scanner
             const startScannerBtn = document.getElementById('startScannerBtn');
             if (startScannerBtn) {
                 startScannerBtn.addEventListener('click', startScanner);
@@ -2594,7 +2557,6 @@
                 stopScannerBtn.addEventListener('click', stopScanner);
             }
 
-            // Tabs
             document.querySelectorAll('.tab-button').forEach(btn => {
                 btn.addEventListener('click', function () {
                     const tab = this.getAttribute('data-tab');
@@ -2602,7 +2564,6 @@
                 });
             });
 
-            // Botões principais
             const syncNowBtn = document.getElementById('syncNowBtn');
             if (syncNowBtn) {
                 syncNowBtn.addEventListener('click', async () => {
@@ -2656,16 +2617,13 @@
                 });
             }
 
-            // Configurar evento de busca com debounce
             const searchInput = document.getElementById('searchInput');
             if (searchInput) {
                 searchInput.addEventListener('input', function () {
-                    // Limpar timeout anterior
                     if (searchTimeout) {
                         clearTimeout(searchTimeout);
                     }
-
-                    // Aguardar 300ms após o usuário parar de digitar
+                    
                     searchTimeout = setTimeout(() => {
                         updateToolsList();
                     }, 300);
@@ -2680,10 +2638,8 @@
                 });
             }
 
-            // Configurar eventos dos modais
             setupModalEvents();
 
-            // Network
             window.addEventListener('online', () => {
                 isOnline = true;
                 updateConnectionStatus(true);
@@ -2698,17 +2654,14 @@
         function switchTab(tab) {
             currentTab = tab;
 
-            // Parar scanner se estiver ativo e mudando de aba
             if (scannerActive && tab !== 'scanner') {
                 stopScanner();
             }
 
-            // Atualizar tabs ativas
             document.querySelectorAll('.tab-button').forEach(btn => {
                 btn.classList.toggle('active', btn.getAttribute('data-tab') === tab);
             });
 
-            // Ocultar todos os conteúdos
             document.querySelectorAll('.tab-content').forEach(div => {
                 div.style.display = 'none';
             });
@@ -2762,16 +2715,13 @@
                 updateUI();
                 updateSyncInfo();
 
-                // SEMPRE sincronizar quando estiver online
                 if (isOnline && supabaseClient) {
                     console.log('🔄 Sincronizando com a nuvem...');
                     showNotification('Sincronizando dados...', 'info');
 
-                    // Buscar todos os itens da nuvem
                     const result = await fetchAllFromSupabase();
 
                     if (result.success) {
-                        // tools já tem todos os itens do fetchAllFromSupabase
                         updateUI();
                         showNotification(`${result.count} itens sincronizados!`, 'success');
                     }
@@ -2781,7 +2731,6 @@
                 console.error('❌ Erro na inicialização:', error);
                 showNotification('Erro ao inicializar', 'error');
             }
-
         }
     </script>
 </body>
