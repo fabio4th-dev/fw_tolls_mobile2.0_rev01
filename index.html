@@ -824,7 +824,8 @@
                             <i class="fas fa-hand-holding-heart"></i> Minhas Ferramentas
                         </h3>
                         <div id="myAssignmentsList">
-                            <p style="text-align: center; color: var(--gray-color); padding: 20px;">Nenhuma ferramenta atribuída a você</p>
+                            <p style="text-align: center; color: var(--gray-color); padding: 20px;">Nenhuma ferramenta
+                                atribuída a você</p>
                         </div>
                     </div>
 
@@ -967,16 +968,19 @@
 
                     <!-- Filtros -->
                     <div id="assignmentsFilters" style="display: flex; gap: 10px; margin-bottom: 15px;">
-                        <button id="showActiveAssignments" class="mobile-btn" style="flex: 1; background: var(--secondary-color); color: white; cursor: pointer;">
+                        <button id="showActiveAssignments" class="mobile-btn"
+                            style="flex: 1; background: var(--secondary-color); color: white; cursor: pointer;">
                             <i class="fas fa-clock"></i> Ativas
                         </button>
-                        <button id="showAllAssignments" class="mobile-btn" style="flex: 1; background: var(--gray-color); color: white; cursor: pointer;">
+                        <button id="showAllAssignments" class="mobile-btn"
+                            style="flex: 1; background: var(--gray-color); color: white; cursor: pointer;">
                             <i class="fas fa-history"></i> Todas
                         </button>
                     </div>
 
                     <div id="assignmentsList">
-                        <p style="text-align: center; color: var(--gray-color); padding: 40px;">Carregando atribuições...</p>
+                        <p style="text-align: center; color: var(--gray-color); padding: 40px;">Carregando
+                            atribuições...</p>
                     </div>
                 </div>
 
@@ -1181,6 +1185,7 @@
     <canvas id="qr-canvas" style="display: none;"></canvas>
 
     <script>
+
         // ============================================
         // CONFIGURAÇÃO SUPABASE
         // ============================================
@@ -1211,6 +1216,60 @@
         let assignmentInProgress = null;
 
         // ============================================
+        // ADICIONE ESTA FUNÇÃO AQUI (APÓS AS VARIÁVEIS)
+        // ============================================
+        function setupTabButtons() {
+            console.log('🔧 Configurando botões das abas...');
+            const tabButtons = document.querySelectorAll('.tab-button');
+            console.log(`📊 Encontrados ${tabButtons.length} botões`);
+
+            // Remover todos os event listeners antigos e adicionar novos
+            tabButtons.forEach(btn => {
+                // Clonar para remover eventos antigos
+                const newBtn = btn.cloneNode(true);
+                btn.parentNode.replaceChild(newBtn, btn);
+
+                // Adicionar novo evento
+                newBtn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const tab = this.getAttribute('data-tab');
+                    console.log('👉 Botão clicado:', tab);
+
+                    // Atualizar classe active
+                    document.querySelectorAll('.tab-button').forEach(b => {
+                        b.classList.remove('active');
+                    });
+                    this.classList.add('active');
+
+                    // Esconder todos os conteúdos
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.style.display = 'none';
+                    });
+
+                    // Mostrar o conteúdo da tab clicada
+                    const tabContent = document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1));
+                    if (tabContent) {
+                        tabContent.style.display = 'block';
+                        currentTab = tab;
+
+                        // Atualizar conteúdo baseado na tab
+                        if (tab === 'dashboard') {
+                            updateUI();
+                        } else if (tab === 'catalogo') {
+                            updateToolsList();
+                        } else if (tab === 'assignments') {
+                            showAssignmentsList(true);
+                        } else if (tab === 'config') {
+                            document.getElementById('localItemsCount').textContent = tools.length;
+                            document.getElementById('localAssignmentsCount').textContent = assignments.length;
+                        }
+                    }
+                });
+            });
+            console.log('✅ Botões configurados com sucesso!');
+        }
+        // ============================================
         // FUNÇÕES DE VERIFICAÇÃO DE PERFIL
         // ============================================
         function getUserRole() {
@@ -1238,13 +1297,13 @@
         // ============================================
         function setupInterfaceByRole() {
             const role = getUserRole();
-            
+
             // Configurar cards e botões
             configureDashboardCards(role);
-            
+
             // Configurar menu lateral
             configureSidebar(role);
-            
+
             // Configurar mensagens e instruções
             configureScannerInstructions(role);
         }
@@ -1252,22 +1311,22 @@
         function configureDashboardCards(role) {
             // Card de sincronização admin
             document.getElementById('adminSyncCard').style.display = isAdmin() ? 'block' : 'none';
-            
+
             // Card de minhas atribuições para colaborador
             document.getElementById('collabMyAssignmentsCard').style.display = isCollaborator() ? 'block' : 'none';
-            
+
             // Botão de novo item
             document.getElementById('addItemBtn').style.display = isAdmin() ? 'flex' : 'none';
-            
+
             // Botão de atribuir
             document.getElementById('assignToolBtn').style.display = isAdmin() ? 'flex' : 'none';
-            
+
             // Botão para colaborador pegar ferramenta
             document.getElementById('collabScanBtn').style.display = isCollaborator() ? 'flex' : 'none';
-            
+
             // Botão de limpar cache
             document.getElementById('clearCacheBtn').style.display = isAdmin() ? 'flex' : 'none';
-            
+
             // Valor total - admins e operadores veem
             const totalValueContainer = document.getElementById('totalValueContainer');
             if (!isAdmin() && !isOperator()) {
@@ -1285,7 +1344,7 @@
         function configureScannerInstructions(role) {
             const instructionsDiv = document.getElementById('scannerInstructions');
             const instructionsText = document.getElementById('scannerInstructionsText');
-            
+
             if (isCollaborator()) {
                 instructionsDiv.style.display = 'block';
                 instructionsText.innerHTML = 'Aponte para o QR Code da ferramenta que deseja pegar. A ferramenta será atribuída automaticamente a você.';
@@ -1305,32 +1364,32 @@
         // ============================================
         function loadMyAssignments() {
             if (!isCollaborator() || !currentUser) return [];
-            
-            const myAssignments = assignments.filter(a => 
-                a.status === 'active' && 
-                (a.collaborator_id == currentUser.collaboratorId || 
-                 a.assigned_to_id == currentUser.collaboratorId)
+
+            const myAssignments = assignments.filter(a =>
+                a.status === 'active' &&
+                (a.collaborator_id == currentUser.collaboratorId ||
+                    a.assigned_to_id == currentUser.collaboratorId)
             );
-            
+
             return myAssignments;
         }
 
         function updateMyAssignmentsCard() {
             if (!isCollaborator()) return;
-            
+
             const myAssignments = loadMyAssignments();
             const listElement = document.getElementById('myAssignmentsList');
-            
+
             if (myAssignments.length === 0) {
                 listElement.innerHTML = '<p style="text-align: center; color: var(--gray-color); padding: 20px;">Nenhuma ferramenta atribuída a você</p>';
                 return;
             }
-            
+
             let html = '';
             myAssignments.forEach(assignment => {
                 const tool = tools.find(t => t.id == assignment.tool_id);
                 if (!tool) return;
-                
+
                 html += `
                     <div class="my-assignment-card">
                         <div style="display: flex; align-items: center; gap: 10px;">
@@ -1349,29 +1408,29 @@
                     </div>
                 `;
             });
-            
+
             listElement.innerHTML = html;
         }
 
         async function returnMyTool(assignmentId) {
             if (!isCollaborator()) return;
-            
+
             if (!confirm('Tem certeza que deseja devolver esta ferramenta?')) return;
-            
+
             try {
                 const assignment = assignments.find(a => a.id == assignmentId);
                 if (!assignment) {
                     showNotification('Atribuição não encontrada', 'error');
                     return;
                 }
-                
+
                 // Atualizar atribuição
                 assignment.status = 'returned';
                 assignment.user_returned = currentUser.name;
                 assignment.actual_return_date = new Date().toISOString().split('T')[0];
                 assignment.updated_at = new Date().toISOString();
                 assignment.sync_status = isOnline ? 'synced' : 'pending';
-                
+
                 // Atualizar no Supabase se estiver online
                 if (isOnline && supabaseClient) {
                     try {
@@ -1384,23 +1443,23 @@
                                 updated_at: assignment.updated_at
                             })
                             .eq('id', assignment.id);
-                            
+
                         if (error) throw error;
                     } catch (error) {
                         console.error('Erro ao atualizar atribuição no Supabase:', error);
                         assignment.sync_status = 'pending';
                     }
                 }
-                
+
                 // Atualizar status da ferramenta
                 await updateToolStatus(assignment.tool_id, 'Disponível');
-                
+
                 showNotification('Ferramenta devolvida com sucesso!', 'success');
-                
+
                 // Atualizar interface
                 updateMyAssignmentsCard();
                 updateUI();
-                
+
             } catch (error) {
                 console.error('Erro ao devolver ferramenta:', error);
                 showNotification('Erro ao devolver ferramenta', 'error');
@@ -1412,7 +1471,7 @@
                 showNotification('Perfil de colaborador não configurado corretamente', 'error');
                 return false;
             }
-            
+
             try {
                 // Buscar ferramenta
                 const tool = tools.find(t => t.id == toolId);
@@ -1420,27 +1479,27 @@
                     showNotification('Ferramenta não encontrada', 'error');
                     return false;
                 }
-                
+
                 // Verificar se ferramenta está disponível
                 if (tool.status !== 'Disponível' && tool.status !== 'Disponivel') {
                     showNotification('Esta ferramenta não está disponível', 'error');
                     return false;
                 }
-                
+
                 // Verificar se já está atribuída
                 const activeAssignment = assignments.find(a => a.tool_id == toolId && a.status === 'active');
                 if (activeAssignment) {
                     showNotification('Esta ferramenta já está atribuída a alguém', 'error');
                     return false;
                 }
-                
+
                 // Verificar se o colaborador já tem ferramentas atribuídas (limite de 3)
                 const myActiveAssignments = loadMyAssignments();
                 if (myActiveAssignments.length >= 3) {
                     showNotification('Você já tem 3 ferramentas atribuídas. Devolva uma antes de pegar outra.', 'warning');
                     return false;
                 }
-                
+
                 // Criar nova atribuição
                 const newAssignment = {
                     id: Date.now().toString(),
@@ -1468,14 +1527,14 @@
                     sync_status: isOnline ? 'synced' : 'pending',
                     source: 'collaborator_scan'
                 };
-                
+
                 // Salvar no Supabase se estiver online
                 if (isOnline && supabaseClient) {
                     try {
                         const { error } = await supabaseClient
                             .from('tool_assignments')
                             .insert([newAssignment]);
-                            
+
                         if (error) throw error;
                     } catch (error) {
                         console.error('Erro ao salvar atribuição no Supabase:', error);
@@ -1484,22 +1543,22 @@
                 } else {
                     newAssignment.sync_status = 'pending';
                 }
-                
+
                 // Adicionar à lista local
                 assignments.unshift(newAssignment);
-                
+
                 // Atualizar status da ferramenta
                 tool.status = 'Em Uso';
                 await updateToolStatus(tool.id, 'Em Uso');
-                
+
                 showNotification(`Ferramenta atribuída a você com sucesso!`, 'success');
-                
+
                 // Atualizar interface
                 updateMyAssignmentsCard();
                 updateUI();
-                
+
                 return true;
-                
+
             } catch (error) {
                 console.error('Erro ao pegar ferramenta:', error);
                 showNotification('Erro ao pegar ferramenta', 'error');
@@ -1576,16 +1635,16 @@
 
         function showScannedToolResultForRole(tool) {
             currentScannedData = tool;
-            
+
             const scannedDataDiv = document.getElementById('scannedData');
             const viewBtn = document.getElementById('viewScannedItemBtn');
             const assignBtn = document.getElementById('assignScannedItemBtn');
             const collabTakeBtn = document.getElementById('collabTakeItemBtn');
-            
+
             // Verificar se ferramenta já está atribuída
             const activeAssignment = assignments.find(a => a.tool_id == tool.id && a.status === 'active');
             const isAvailable = tool.status === 'Disponível' || tool.status === 'Disponivel';
-            
+
             let statusHtml = '';
             if (activeAssignment) {
                 statusHtml = `<p style="color: var(--danger-color); margin-top: 10px;"><i class="fas fa-exclamation-triangle"></i> Esta ferramenta está com ${activeAssignment.collaborator_name}</p>`;
@@ -1607,22 +1666,22 @@
                 <p><strong>Localização:</strong> ${tool.location}</p>
                 ${statusHtml}
             `;
-            
+
             // Configurar botões conforme perfil
             viewBtn.style.display = 'block';
-            
+
             if (isAdmin() && isAvailable && !activeAssignment) {
                 assignBtn.style.display = 'block';
             } else {
                 assignBtn.style.display = 'none';
             }
-            
+
             if (isCollaborator() && isAvailable && !activeAssignment) {
                 collabTakeBtn.style.display = 'block';
             } else {
                 collabTakeBtn.style.display = 'none';
             }
-            
+
             document.getElementById('scannerResult').style.display = 'block';
         }
 
@@ -1633,14 +1692,14 @@
             const listElement = document.getElementById('assignmentsList');
             const titleElement = document.getElementById('assignmentsTitle');
             const filtersElement = document.getElementById('assignmentsFilters');
-            
+
             if (isCollaborator()) {
                 // Colaborador vê apenas suas próprias atribuições
                 titleElement.textContent = 'Minhas Atribuições';
                 filtersElement.style.display = 'none';
-                
+
                 const myAssignments = loadMyAssignments();
-                
+
                 if (myAssignments.length === 0) {
                     listElement.innerHTML = `
                         <div class="card" style="text-align: center; padding: 40px 20px;">
@@ -1653,12 +1712,12 @@
                     `;
                     return;
                 }
-                
+
                 let html = '';
                 myAssignments.forEach(assignment => {
                     const tool = tools.find(t => t.id == assignment.tool_id);
                     if (!tool) return;
-                    
+
                     html += `
                         <div class="my-assignment-card">
                             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
@@ -1677,18 +1736,18 @@
                         </div>
                     `;
                 });
-                
+
                 listElement.innerHTML = html;
-                
+
             } else {
                 // Admin ou operador vê todas as atribuições
                 titleElement.textContent = 'Atribuições de Ferramentas';
                 filtersElement.style.display = 'flex';
-                
-                let filteredAssignments = showActive 
+
+                let filteredAssignments = showActive
                     ? assignments.filter(a => a.status === 'active')
                     : assignments;
-                
+
                 if (filteredAssignments.length === 0) {
                     listElement.innerHTML = `
                         <div class="card" style="text-align: center; padding: 40px 20px;">
@@ -1698,12 +1757,12 @@
                     `;
                     return;
                 }
-                
+
                 let html = '';
                 filteredAssignments.forEach(assignment => {
                     const tool = tools.find(t => t.id == assignment.tool_id);
                     const isActive = assignment.status === 'active';
-                    
+
                     html += `
                         <div class="assignment-card" style="border-left-color: ${isActive ? 'var(--assign-color)' : 'var(--gray-color)'};">
                             <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
@@ -1716,21 +1775,21 @@
                             <p><i class="fas fa-user" style="width: 20px; color: var(--gray-color);"></i> ${assignment.collaborator_name}</p>
                             <p><i class="fas fa-calendar" style="width: 20px; color: var(--gray-color);"></i> Atribuição: ${formatDate(assignment.assignment_date)}</p>
                             
-                            ${assignment.actual_return_date ? 
-                                `<p><i class="fas fa-calendar-check" style="width: 20px; color: var(--gray-color);"></i> Devolução: ${formatDate(assignment.actual_return_date)}</p>` : 
-                                ''}
+                            ${assignment.actual_return_date ?
+                            `<p><i class="fas fa-calendar-check" style="width: 20px; color: var(--gray-color);"></i> Devolução: ${formatDate(assignment.actual_return_date)}</p>` :
+                            ''}
                             
                             <p><i class="fas fa-user-tag" style="width: 20px; color: var(--gray-color);"></i> Responsável: ${assignment.user_assigned}</p>
                             
-                            ${isActive && isAdmin() ? 
-                                `<button class="mobile-btn" onclick="returnTool('${assignment.id}')" style="margin-top: 15px; background: var(--success-color); color: white; cursor: pointer;">
+                            ${isActive && isAdmin() ?
+                            `<button class="mobile-btn" onclick="returnTool('${assignment.id}')" style="margin-top: 15px; background: var(--success-color); color: white; cursor: pointer;">
                                     <i class="fas fa-undo-alt"></i> Registrar Devolução
-                                </button>` : 
-                                ''}
+                                </button>` :
+                            ''}
                         </div>
                     `;
                 });
-                
+
                 listElement.innerHTML = html;
             }
         }
@@ -1764,7 +1823,7 @@
 
             updateStatusStats();
             updateRecentItems();
-            
+
             // Atualizar minhas atribuições se for colaborador
             if (isCollaborator()) {
                 updateMyAssignmentsCard();
@@ -1828,7 +1887,7 @@
 
         function updateRecentItems() {
             const recentElement = document.getElementById('recentItems');
-            
+
             // Para colaborador, mostrar apenas se tiver itens
             if (isCollaborator()) {
                 const myAssignments = loadMyAssignments();
@@ -1837,7 +1896,7 @@
                     return;
                 }
             }
-            
+
             const recent = tools.slice(0, 5);
 
             if (recent.length === 0) {
@@ -1862,9 +1921,9 @@
                         <div style="flex: 1;">
                             <div style="font-weight: 500; font-size: 14px;">${tool.name}</div>
                             <div style="font-size: 12px; color: var(--gray-color);">${tool.code} | ${tool.location}</div>
-                            ${activeAssignment ? 
-                                `<div style="font-size: 11px; color: var(--assign-color);"><i class="fas fa-hand-holding"></i> ${activeAssignment.collaborator_name}</div>` : 
-                                ''}
+                            ${activeAssignment ?
+                        `<div style="font-size: 11px; color: var(--assign-color);"><i class="fas fa-hand-holding"></i> ${activeAssignment.collaborator_name}</div>` :
+                        ''}
                         </div>
                         <div style="font-size: 14px; font-weight: 500; color: ${getStatusColor(tool.status)};">
                             ${tool.status}
@@ -1922,7 +1981,7 @@
                     email: 'raquel@fwcompany.com.br',
                     collaboratorId: null
                 },
-                
+
                 // Operadores (usuários genéricos)
                 'fwuser': {
                     password: 'User123',
@@ -1938,7 +1997,7 @@
                     email: 'joao.operador@fwcompany.com.br',
                     collaboratorId: null
                 },
-                
+
                 // Colaboradores (podem pegar ferramentas)
                 'carlos.colaborador': {
                     password: 'Carlos123',
@@ -1969,10 +2028,10 @@
             if (users[email] && users[email].password === password) {
                 currentUser = users[email];
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                
+
                 // Configurar interface baseada no papel
                 setupInterfaceByRole();
-                
+
                 showDashboard();
                 initializeSystem();
             } else {
@@ -1981,23 +2040,36 @@
         }
 
         function showDashboard() {
+            console.log('📱 Mostrando dashboard...');
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('mobileDashboard').style.display = 'flex';
 
             if (currentUser) {
                 const userBadge = document.getElementById('userBadge');
                 const userName = document.getElementById('userName');
-                
+
                 if (userBadge) {
                     if (isAdmin()) userBadge.textContent = 'ADMIN';
                     else if (isOperator()) userBadge.textContent = 'OPERADOR';
                     else if (isCollaborator()) userBadge.textContent = 'COLABORADOR';
                 }
-                
+
                 if (userName) {
                     userName.textContent = currentUser.name;
                 }
             }
+            // Configurar interface baseada no papel
+            setupInterfaceByRole();
+
+            // CORREÇÃO: Configurar os botões após mostrar o dashboard
+            setTimeout(() => {
+                setupTabButtons();
+                // Garantir que a tab inicial seja dashboard
+                const dashboardBtn = document.querySelector('.tab-button[data-tab="dashboard"]');
+                if (dashboardBtn) {
+                    dashboardBtn.click();
+                }
+            }, 200);
 
             checkUrlForItem();
         }
@@ -2027,8 +2099,8 @@
                 document.getElementById('menuUserEmail').textContent = currentUser.email;
                 document.getElementById('menuUserRole').textContent =
                     isAdmin() ? 'ADMIN' :
-                    isOperator() ? 'OPERADOR' :
-                    isCollaborator() ? 'COLABORADOR' : 'USUÁRIO';
+                        isOperator() ? 'OPERADOR' :
+                            isCollaborator() ? 'COLABORADOR' : 'USUÁRIO';
             }
         }
 
@@ -2058,59 +2130,10 @@
             }
         }
 
-        function switchTab(tab) {
-            currentTab = tab;
-
-            if (scannerActive && tab !== 'scanner') {
-                stopScanner();
-            }
-
-            document.querySelectorAll('.tab-button').forEach(btn => {
-                btn.classList.toggle('active', btn.getAttribute('data-tab') === tab);
-            });
-
-            document.querySelectorAll('.tab-content').forEach(div => {
-                div.style.display = 'none';
-            });
-
-            switch (tab) {
-                case 'dashboard':
-                    document.getElementById('tabDashboard').style.display = 'block';
-                    updateUI();
-                    break;
-                case 'cadastro':
-                    if (isAdmin()) {
-                        document.getElementById('tabCadastro').style.display = 'block';
-                        loadCadastroForm();
-                    } else {
-                        switchTab('dashboard');
-                    }
-                    break;
-                case 'catalogo':
-                    if (isAdmin() || isOperator()) {
-                        document.getElementById('tabCatalogo').style.display = 'block';
-                        loadedToolsCount = 50;
-                        updateToolsList();
-                    } else {
-                        switchTab('dashboard');
-                    }
-                    break;
-                case 'scanner':
-                    document.getElementById('tabScanner').style.display = 'block';
-                    break;
-                case 'assignments':
-                    document.getElementById('tabAssignments').style.display = 'block';
-                    showAssignmentsList(true);
-                    break;
-                case 'config':
-                    document.getElementById('tabConfig').style.display = 'block';
-                    document.getElementById('localItemsCount').textContent = tools.length;
-                    document.getElementById('localAssignmentsCount').textContent = assignments.length;
-                    document.getElementById('lastSyncTime').textContent = localStorage.getItem('lastSync') ? 
-                        new Date(localStorage.getItem('lastSync')).toLocaleString() : 'Nunca';
-                    break;
-            }
-        }
+function switchTab(tab) {
+    console.log('Função switchTab chamada para:', tab);
+    return;
+}
 
         // ============================================
         // FUNÇÕES AUXILIARES
@@ -2163,7 +2186,7 @@
             if (isAdmin()) permissions = '✅ Admin - Acesso total';
             else if (isOperator()) permissions = '👁️ Operador - Visualização';
             else if (isCollaborator()) permissions = '🔧 Colaborador - Auto-atribuição';
-            
+
             alert(`Perfil do Usuário:\n\nNome: ${currentUser.name}\nEmail: ${currentUser.email}\nFunção: ${currentUser.role}\n${permissions}`);
             closeMenu();
         }
@@ -2280,12 +2303,12 @@
 
                 assignments = data || [];
                 console.log(`✅ ${assignments.length} atribuições carregadas`);
-                
+
                 // Atualizar contador de atribuições ativas
                 const activeCount = assignments.filter(a => a.status === 'active').length;
                 document.getElementById('assignedCount').textContent = activeCount;
                 document.getElementById('localAssignmentsCount').textContent = assignments.length;
-                
+
                 return assignments;
             } catch (error) {
                 console.error('❌ Erro ao carregar atribuições:', error);
@@ -2374,10 +2397,10 @@
                 await updateToolStatus(tool.id, 'Em Uso');
 
                 showNotification(`Ferramenta atribuída a ${collaborator.name}`, 'success');
-                
+
                 // Atualizar interface
                 updateUI();
-                
+
                 return true;
             } catch (error) {
                 console.error('Erro ao atribuir ferramenta:', error);
@@ -2431,10 +2454,10 @@
                 await updateToolStatus(assignment.tool_id, 'Disponível');
 
                 showNotification('Ferramenta devolvida com sucesso', 'success');
-                
+
                 // Atualizar interface
                 updateUI();
-                
+
                 return true;
             } catch (error) {
                 console.error('Erro ao devolver ferramenta:', error);
@@ -2449,15 +2472,15 @@
                 if (tool) {
                     tool.status = newStatus;
                     tool.updatedAt = new Date().toISOString();
-                    
+
                     // Salvar no IndexedDB
                     await saveToIndexedDB(tools);
-                    
+
                     // Atualizar no Supabase se estiver online
                     if (isOnline && supabaseClient) {
                         await supabaseClient
                             .from('tools')
-                            .update({ 
+                            .update({
                                 status: newStatus,
                                 updated_at: tool.updatedAt
                             })
@@ -2621,7 +2644,7 @@
                     ${data}
                 </div>
             `;
-            
+
             document.getElementById('viewScannedItemBtn').style.display = 'none';
             document.getElementById('assignScannedItemBtn').style.display = 'none';
             document.getElementById('collabTakeItemBtn').style.display = 'none';
@@ -3109,11 +3132,11 @@
                                     <span style="font-size: 12px; color: var(--gray-color);">${tool.location}</span>
                                     <span style="font-size: 12px; color: var(--gray-color);">Qtd: ${tool.quantidade || 1}</span>
                                 </div>
-                                ${activeAssignment ? 
-                                    `<div style="font-size: 12px; margin-top: 5px; color: var(--assign-color);">
+                                ${activeAssignment ?
+                        `<div style="font-size: 12px; margin-top: 5px; color: var(--assign-color);">
                                         <i class="fas fa-hand-holding"></i> ${activeAssignment.collaborator_name}
-                                    </div>` : 
-                                    ''}
+                                    </div>` :
+                        ''}
                             </div>
                         </div>
                         
@@ -3121,21 +3144,21 @@
                             <button class="action-btn view" data-id="${tool.id}">
                                 <i class="fas fa-eye"></i> Ver
                             </button>
-                            ${!restricted ? 
-                                `<button class="action-btn qr" data-id="${tool.id}">
+                            ${!restricted ?
+                        `<button class="action-btn qr" data-id="${tool.id}">
                                     <i class="fas fa-qrcode"></i> QR
-                                </button>` : 
-                                ''}
-                            ${isAdmin() && isAvailable && !activeAssignment ? 
-                                `<button class="action-btn assign" data-id="${tool.id}">
+                                </button>` :
+                        ''}
+                            ${isAdmin() && isAvailable && !activeAssignment ?
+                        `<button class="action-btn assign" data-id="${tool.id}">
                                     <i class="fas fa-hand-holding"></i> Atribuir
-                                </button>` : 
-                                ''}
-                            ${isCollaborator() && isAvailable && !activeAssignment ? 
-                                `<button class="action-btn collab-assign" data-id="${tool.id}">
+                                </button>` :
+                        ''}
+                            ${isCollaborator() && isAvailable && !activeAssignment ?
+                        `<button class="action-btn collab-assign" data-id="${tool.id}">
                                     <i class="fas fa-hand-holding-heart"></i> Pegar
-                                </button>` : 
-                                ''}
+                                </button>` :
+                        ''}
                         </div>
                     </div>
                 `;
@@ -3268,7 +3291,7 @@
             // Verificar atribuição atual
             const activeAssignment = assignments.find(a => a.tool_id == tool.id && a.status === 'active');
             const isMine = isCollaborator() && activeAssignment && activeAssignment.collaborator_id == currentUser.collaboratorId;
-            
+
             let assignmentInfo = '';
             if (activeAssignment) {
                 if (isMine) {
@@ -3774,20 +3797,20 @@
             assignmentInProgress = { tool, selectedCollaboratorId: null };
 
             // Adicionar eventos
-            document.getElementById('searchCollaborator').addEventListener('input', function() {
+            document.getElementById('searchCollaborator').addEventListener('input', function () {
                 const term = this.value.toLowerCase();
                 filterCollaborators(term);
             });
 
             document.getElementById('cancelAssignBtn').addEventListener('click', closeAssignModal);
 
-            document.getElementById('confirmAssignBtn').addEventListener('click', async function() {
+            document.getElementById('confirmAssignBtn').addEventListener('click', async function () {
                 if (assignmentInProgress && assignmentInProgress.selectedCollaboratorId) {
                     const success = await assignTool(
-                        assignmentInProgress.tool.id, 
+                        assignmentInProgress.tool.id,
                         assignmentInProgress.selectedCollaboratorId
                     );
-                    
+
                     if (success) {
                         closeAssignModal();
                         switchTab('assignments');
@@ -3819,7 +3842,7 @@
 
         function filterCollaborators(term) {
             const items = document.querySelectorAll('.collaborator-item');
-            
+
             items.forEach(item => {
                 const text = item.textContent.toLowerCase();
                 if (text.includes(term)) {
@@ -3948,7 +3971,7 @@
 
             const viewScannedItemBtn = document.getElementById('viewScannedItemBtn');
             if (viewScannedItemBtn) {
-                viewScannedItemBtn.addEventListener('click', function() {
+                viewScannedItemBtn.addEventListener('click', function () {
                     if (currentScannedTool) {
                         closeItemModal();
                         showToolDetails(currentScannedTool.id);
@@ -3958,7 +3981,7 @@
 
             const assignScannedItemBtn = document.getElementById('assignScannedItemBtn');
             if (assignScannedItemBtn) {
-                assignScannedItemBtn.addEventListener('click', function() {
+                assignScannedItemBtn.addEventListener('click', function () {
                     if (currentScannedTool && isAdmin()) {
                         stopScanner();
                         showAssignModal(currentScannedTool);
@@ -3968,7 +3991,7 @@
 
             const collabTakeItemBtn = document.getElementById('collabTakeItemBtn');
             if (collabTakeItemBtn) {
-                collabTakeItemBtn.addEventListener('click', async function() {
+                collabTakeItemBtn.addEventListener('click', async function () {
                     if (currentScannedTool && isCollaborator()) {
                         stopScanner();
                         const success = await takeToolAsCollaborator(currentScannedTool.id);
@@ -3981,7 +4004,7 @@
 
             const scanAgainBtn = document.getElementById('scanAgainBtn');
             if (scanAgainBtn) {
-                scanAgainBtn.addEventListener('click', function() {
+                scanAgainBtn.addEventListener('click', function () {
                     document.getElementById('scannerResult').style.display = 'none';
                     currentScannedTool = null;
                     startScanner();
