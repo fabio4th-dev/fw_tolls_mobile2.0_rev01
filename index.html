@@ -35,6 +35,7 @@
             --gray-color: #95a5a6;
             --text-color: #2c3e50;
             --border-color: #bdc3c7;
+            --assign-color: #8e44ad;
         }
 
         * {
@@ -201,11 +202,19 @@
         }
 
         .menu-item.logout {
-            color: var(--danger-color);
+            color: #ffffff !important;
+            background: var(--danger-color) !important;
+            margin-top: 10px;
+            border-radius: 8px;
         }
 
         .menu-item.logout i {
-            color: var(--danger-color);
+            color: #ffffff !important;
+        }
+
+        .menu-item.logout:hover,
+        .menu-item.logout:active {
+            background: #c0392b !important;
         }
 
         /* Tabs */
@@ -259,6 +268,43 @@
             height: 100%;
             object-fit: cover;
             border-radius: 8px;
+        }
+
+        /* Status Badges */
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            display: inline-block;
+        }
+
+        .status-available {
+            background: #27ae60;
+            color: white;
+        }
+
+        .status-in-use {
+            background: #3498db;
+            color: white;
+        }
+
+        .status-maintenance {
+            background: #f39c12;
+            color: white;
+        }
+
+        .status-damaged {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .assignment-card {
+            background: #f8f9fa;
+            border-left: 4px solid var(--assign-color);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
         }
 
         /* Loader */
@@ -455,18 +501,20 @@
             display: flex;
             gap: 8px;
             margin-top: 10px;
+            flex-wrap: wrap;
         }
 
         .action-btn {
             flex: 1;
-            padding: 8px;
+            padding: 10px;
             border: none;
             border-radius: 8px;
-            font-size: 12px;
+            font-size: 13px;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 5px;
+            min-width: 80px;
         }
 
         .action-btn.view {
@@ -476,6 +524,16 @@
 
         .action-btn.qr {
             background: #8e44ad;
+            color: white;
+        }
+
+        .action-btn.assign {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .action-btn.return {
+            background: var(--success-color);
             color: white;
         }
 
@@ -527,33 +585,65 @@
             z-index: 10;
         }
 
-        /* Botão de logout - CORRIGIDO PARA IPHONE */
-        .menu-item.logout {
-            color: #ffffff !important;
-            background: var(--danger-color) !important;
-            margin-top: 10px;
+        /* Assignment Step */
+        .assignment-step {
+            background: var(--light-color);
             border-radius: 8px;
-        }
-
-        .menu-item.logout i {
-            color: #ffffff !important;
-        }
-
-        .menu-item.logout:hover,
-        .menu-item.logout:active {
-            background: #c0392b !important;
-        }
-
-        /* Garantir que todos os botões do menu sejam visíveis */
-        .menu-item {
-            color: var(--text-color);
-            background: transparent;
-        }
-
-        .menu-footer {
-            background: #f8f9fa;
-            border-top: 2px solid var(--border-color);
             padding: 15px;
+            margin: 10px 0;
+        }
+
+        .step-indicator {
+            display: flex;
+            margin-bottom: 20px;
+        }
+
+        .step {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            background: var(--light-color);
+            color: var(--gray-color);
+            border-radius: 8px 8px 0 0;
+            font-size: 14px;
+        }
+
+        .step.active {
+            background: var(--assign-color);
+            color: white;
+        }
+
+        .collaborator-item {
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .collaborator-item:hover {
+            background: var(--light-color);
+            border-color: var(--assign-color);
+        }
+
+        .collaborator-item.selected {
+            background: #8e44ad20;
+            border-color: var(--assign-color);
+            border-width: 2px;
+        }
+
+        .tool-assignment-info {
+            background: var(--light-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .assignment-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
         }
     </style>
 </head>
@@ -564,7 +654,6 @@
         <div id="loginScreen" class="login-container">
             <div class="login-box">
                 <div style="text-align: center; margin-bottom: 30px;">
-                    <!-- Logo Delservin -->
                     <div style="margin-bottom: 20px;">
                         <div style="display: flex; justify-content: center; align-items: center;">
                             <img src="Delservin Logo.PNG" alt="Delservin"
@@ -581,7 +670,7 @@
 
                 <div class="form-group">
                     <label for="loginEmail">Email ou Usuário</label>
-                    <input type="text" id="loginEmail" placeholder="fabio@fwcompany.com.br" autocapitalize="off"
+                    <input type="text" id="loginEmail" placeholder="Seu login" autocapitalize="off"
                         autocomplete="username">
                 </div>
 
@@ -620,7 +709,7 @@
                 </div>
 
                 <!-- Stats -->
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center;">
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; text-align: center;">
                     <div>
                         <div style="font-size: 12px; opacity: 0.9;">Itens</div>
                         <div style="font-size: 20px; font-weight: bold;" id="totalItems">0/0</div>
@@ -632,6 +721,10 @@
                     <div>
                         <div style="font-size: 12px; opacity: 0.9;">Status</div>
                         <div style="font-size: 20px; font-weight: bold;" id="syncStatus">Local</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 12px; opacity: 0.9;">Atribuídas</div>
+                        <div style="font-size: 20px; font-weight: bold;" id="assignedCount">0</div>
                     </div>
                 </div>
             </header>
@@ -675,6 +768,10 @@
                             <button class="mobile-btn" id="addItemBtn"
                                 style="background: var(--secondary-color); color: white;">
                                 <i class="fas fa-plus"></i> Novo Item
+                            </button>
+                            <button class="mobile-btn" id="assignToolBtn"
+                                style="background: var(--assign-color); color: white;">
+                                <i class="fas fa-hand-holding"></i> Atribuir
                             </button>
                             <button class="mobile-btn" id="syncNowBtn"
                                 style="background: var(--success-color); color: white;">
@@ -771,12 +868,34 @@
                                     style="background: var(--secondary-color); color: white; display: none;">
                                     <i class="fas fa-eye"></i> Ver Item
                                 </button>
+                                <button id="assignScannedItemBtn" class="mobile-btn"
+                                    style="background: var(--assign-color); color: white; display: none;">
+                                    <i class="fas fa-hand-holding"></i> Atribuir Item
+                                </button>
                                 <button id="scanAgainBtn" class="mobile-btn"
                                     style="background: var(--warning-color); color: white;">
                                     <i class="fas fa-redo"></i> Escanear Novamente
                                 </button>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Atribuições Tab -->
+                <div id="tabAssignments" class="tab-content" style="display: none;">
+                    <h2 style="margin-bottom: 20px; font-size: 20px;">Atribuições de Ferramentas</h2>
+
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <button id="showActiveAssignments" class="mobile-btn" style="flex: 1; background: var(--secondary-color); color: white;">
+                            <i class="fas fa-clock"></i> Ativas
+                        </button>
+                        <button id="showAllAssignments" class="mobile-btn" style="flex: 1; background: var(--gray-color); color: white;">
+                            <i class="fas fa-history"></i> Todas
+                        </button>
+                    </div>
+
+                    <div id="assignmentsList">
+                        <p style="text-align: center; color: var(--gray-color); padding: 40px;">Carregando atribuições...</p>
                     </div>
                 </div>
 
@@ -818,8 +937,9 @@
                         <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color);">
                             <h4 style="margin-bottom: 10px;">Informações do Sistema</h4>
                             <div style="font-size: 14px;">
-                                <p><strong>Versão:</strong> 1.0.0</p>
+                                <p><strong>Versão:</strong> 2.0.0</p>
                                 <p><strong>Itens locais:</strong> <span id="localItemsCount">0</span></p>
+                                <p><strong>Atribuições ativas:</strong> <span id="localAssignmentsCount">0</span></p>
                                 <p><strong>Última sincronização:</strong> <span id="lastSyncTime">Nunca</span></p>
                                 <p><strong>Armazenamento usado:</strong> <span id="storageUsed">0 MB</span></p>
                             </div>
@@ -848,6 +968,10 @@
                 <button class="tab-button" data-tab="scanner">
                     <i class="fas fa-qrcode"></i>
                     <span>Scanner</span>
+                </button>
+                <button class="tab-button" data-tab="assignments">
+                    <i class="fas fa-hand-holding"></i>
+                    <span>Atribuições</span>
                 </button>
                 <button class="tab-button" data-tab="config">
                     <i class="fas fa-cog"></i>
@@ -912,6 +1036,23 @@
             </div>
         </div>
 
+        <!-- Modal para Atribuição de Ferramenta -->
+        <div id="assignModal" class="modal-overlay">
+            <div class="modal-content">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="font-size: 18px;" id="assignModalTitle">Atribuir Ferramenta</h3>
+                    <button id="closeAssignModalBtn"
+                        style="background: none; border: none; font-size: 20px; color: var(--gray-color);">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <div id="assignModalBody">
+                    <!-- Conteúdo do modal será carregado aqui -->
+                </div>
+            </div>
+        </div>
+
         <!-- Modal para Detalhes do Item -->
         <div id="itemModal" class="modal-overlay">
             <div class="modal-content">
@@ -969,6 +1110,8 @@
         // ============================================
         let currentUser = null;
         let tools = [];
+        let collaborators = [];
+        let assignments = [];
         let supabaseClient = null;
         let isOnline = navigator.onLine;
         let currentTab = 'dashboard';
@@ -979,7 +1122,9 @@
         let videoStream = null;
         let scanningInterval = null;
         let currentScannedData = null;
+        let currentScannedTool = null;
         let searchTimeout = null;
+        let assignmentInProgress = null;
 
         // ============================================
         // FUNÇÃO PARA VERIFICAR SE USUÁRIO TEM PERMISSÃO
@@ -987,6 +1132,11 @@
         function isRestrictedUser() {
             // Retorna true apenas para o usuário genérico (fwuser)
             return currentUser && currentUser.email === 'fwuser@fwcompany.com.br';
+        }
+
+        function canAssignTools() {
+            // Usuários genéricos NÃO podem atribuir ferramentas
+            return !isRestrictedUser();
         }
 
         function canCreateItems() {
@@ -1033,6 +1183,14 @@
                     addItemBtn.title = 'Acesso restrito';
                 }
 
+                // Desabilitar botão de atribuir
+                const assignToolBtn = document.getElementById('assignToolBtn');
+                if (assignToolBtn) {
+                    assignToolBtn.disabled = true;
+                    assignToolBtn.style.opacity = '0.5';
+                    assignToolBtn.title = 'Acesso restrito';
+                }
+
                 // Ocultar a tab de cadastro no footer
                 const tabCadastroBtn = document.getElementById('tabCadastroBtn');
                 if (tabCadastroBtn) {
@@ -1057,6 +1215,14 @@
                     addItemBtn.title = '';
                 }
 
+                // Habilitar botão de atribuir
+                const assignToolBtn = document.getElementById('assignToolBtn');
+                if (assignToolBtn) {
+                    assignToolBtn.disabled = false;
+                    assignToolBtn.style.opacity = '1';
+                    assignToolBtn.title = '';
+                }
+
                 // Mostrar a tab de cadastro no footer
                 const tabCadastroBtn = document.getElementById('tabCadastroBtn');
                 if (tabCadastroBtn) {
@@ -1079,8 +1245,14 @@
                 closeQRModalBtn.addEventListener('click', closeQRModal);
             }
 
+            const closeAssignModalBtn = document.getElementById('closeAssignModalBtn');
+            if (closeAssignModalBtn) {
+                closeAssignModalBtn.addEventListener('click', closeAssignModal);
+            }
+
             const itemModal = document.getElementById('itemModal');
             const qrModal = document.getElementById('qrModal');
+            const assignModal = document.getElementById('assignModal');
 
             if (itemModal) {
                 itemModal.addEventListener('click', function (e) {
@@ -1097,6 +1269,14 @@
                     }
                 });
             }
+
+            if (assignModal) {
+                assignModal.addEventListener('click', function (e) {
+                    if (e.target === this) {
+                        closeAssignModal();
+                    }
+                });
+            }
         }
 
         function closeItemModal() {
@@ -1105,6 +1285,854 @@
 
         function closeQRModal() {
             document.getElementById('qrModal').style.display = 'none';
+        }
+
+        function closeAssignModal() {
+            document.getElementById('assignModal').style.display = 'none';
+            assignmentInProgress = null;
+        }
+
+        // ============================================
+        // FUNÇÕES DE CARREGAMENTO DE COLABORADORES
+        // ============================================
+        async function loadCollaborators() {
+            try {
+                if (!supabaseClient) {
+                    console.log('⚠️ Sem conexão com Supabase');
+                    return [];
+                }
+
+                const { data, error } = await supabaseClient
+                    .from('collaborators')
+                    .select('*')
+                    .eq('status', 'active')
+                    .order('name');
+
+                if (error) throw error;
+
+                collaborators = data || [];
+                console.log(`✅ ${collaborators.length} colaboradores carregados`);
+                return collaborators;
+            } catch (error) {
+                console.error('❌ Erro ao carregar colaboradores:', error);
+                return [];
+            }
+        }
+
+        // ============================================
+        // FUNÇÕES DE ATRIBUIÇÃO
+        // ============================================
+        async function loadAssignments() {
+            try {
+                if (!supabaseClient) {
+                    console.log('⚠️ Sem conexão com Supabase');
+                    return [];
+                }
+
+                const { data, error } = await supabaseClient
+                    .from('tool_assignments')
+                    .select('*')
+                    .order('assignment_date', { ascending: false });
+
+                if (error) throw error;
+
+                assignments = data || [];
+                console.log(`✅ ${assignments.length} atribuições carregadas`);
+                
+                // Atualizar contador de atribuições ativas
+                const activeCount = assignments.filter(a => a.status === 'active').length;
+                document.getElementById('assignedCount').textContent = activeCount;
+                document.getElementById('localAssignmentsCount').textContent = assignments.length;
+                
+                return assignments;
+            } catch (error) {
+                console.error('❌ Erro ao carregar atribuições:', error);
+                return [];
+            }
+        }
+
+        async function assignTool(toolId, collaboratorId) {
+            try {
+                // Verificar permissão
+                if (!canAssignTools()) {
+                    showNotification('Você não tem permissão para atribuir ferramentas', 'error');
+                    return false;
+                }
+
+                // Buscar ferramenta
+                const tool = tools.find(t => t.id == toolId);
+                if (!tool) {
+                    showNotification('Ferramenta não encontrada', 'error');
+                    return false;
+                }
+
+                // Verificar se ferramenta já está atribuída
+                const activeAssignment = assignments.find(a => a.tool_id == toolId && a.status === 'active');
+                if (activeAssignment) {
+                    showNotification('Esta ferramenta já está atribuída a alguém', 'error');
+                    return false;
+                }
+
+                // Buscar colaborador
+                const collaborator = collaborators.find(c => c.id == collaboratorId);
+                if (!collaborator) {
+                    showNotification('Colaborador não encontrado', 'error');
+                    return false;
+                }
+
+                // Criar nova atribuição
+                const newAssignment = {
+                    id: Date.now().toString(),
+                    tool_id: tool.id.toString(),
+                    tool_code: tool.code,
+                    tool_name: tool.name,
+                    collaborator_id: collaborator.id.toString(),
+                    collaborator_registration: collaborator.registration,
+                    collaborator_name: collaborator.name,
+                    assignment_date: new Date().toISOString().split('T')[0],
+                    assignment_type: 'collaborator',
+                    assigned_to_type: 'colaborador',
+                    assigned_to_id: collaborator.id.toString(),
+                    assigned_to_name: collaborator.name,
+                    status: 'active',
+                    observations: null,
+                    user_assigned: currentUser.name,
+                    user_returned: null,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
+                    returned_date: null,
+                    expected_return_date: null,
+                    actual_return_date: null,
+                    local_id: Date.now().toString(),
+                    sync_status: isOnline ? 'synced' : 'pending',
+                    source: null
+                };
+
+                // Salvar no Supabase se estiver online
+                if (isOnline && supabaseClient) {
+                    try {
+                        const { error } = await supabaseClient
+                            .from('tool_assignments')
+                            .insert([newAssignment]);
+
+                        if (error) throw error;
+                    } catch (error) {
+                        console.error('Erro ao salvar atribuição no Supabase:', error);
+                        newAssignment.sync_status = 'pending';
+                    }
+                } else {
+                    newAssignment.sync_status = 'pending';
+                }
+
+                // Adicionar à lista local
+                assignments.unshift(newAssignment);
+
+                // Atualizar status da ferramenta
+                tool.status = 'Em Uso';
+                await updateToolStatus(tool.id, 'Em Uso');
+
+                showNotification(`Ferramenta atribuída a ${collaborator.name}`, 'success');
+                
+                // Atualizar interface
+                updateUI();
+                
+                return true;
+            } catch (error) {
+                console.error('Erro ao atribuir ferramenta:', error);
+                showNotification('Erro ao atribuir ferramenta', 'error');
+                return false;
+            }
+        }
+
+        async function returnTool(assignmentId) {
+            try {
+                // Verificar permissão
+                if (!canAssignTools()) {
+                    showNotification('Você não tem permissão para devolver ferramentas', 'error');
+                    return false;
+                }
+
+                const assignment = assignments.find(a => a.id == assignmentId);
+                if (!assignment) {
+                    showNotification('Atribuição não encontrada', 'error');
+                    return false;
+                }
+
+                // Atualizar atribuição
+                assignment.status = 'returned';
+                assignment.user_returned = currentUser.name;
+                assignment.actual_return_date = new Date().toISOString().split('T')[0];
+                assignment.updated_at = new Date().toISOString();
+                assignment.sync_status = isOnline ? 'synced' : 'pending';
+
+                // Atualizar no Supabase se estiver online
+                if (isOnline && supabaseClient) {
+                    try {
+                        const { error } = await supabaseClient
+                            .from('tool_assignments')
+                            .update({
+                                status: 'returned',
+                                user_returned: currentUser.name,
+                                actual_return_date: assignment.actual_return_date,
+                                updated_at: assignment.updated_at
+                            })
+                            .eq('id', assignment.id);
+
+                        if (error) throw error;
+                    } catch (error) {
+                        console.error('Erro ao atualizar atribuição no Supabase:', error);
+                        assignment.sync_status = 'pending';
+                    }
+                }
+
+                // Atualizar status da ferramenta
+                await updateToolStatus(assignment.tool_id, 'Disponível');
+
+                showNotification('Ferramenta devolvida com sucesso', 'success');
+                
+                // Atualizar interface
+                updateUI();
+                
+                return true;
+            } catch (error) {
+                console.error('Erro ao devolver ferramenta:', error);
+                showNotification('Erro ao devolver ferramenta', 'error');
+                return false;
+            }
+        }
+
+        async function updateToolStatus(toolId, newStatus) {
+            try {
+                const tool = tools.find(t => t.id == toolId);
+                if (tool) {
+                    tool.status = newStatus;
+                    tool.updatedAt = new Date().toISOString();
+                    
+                    // Salvar no IndexedDB
+                    await saveToIndexedDB(tools);
+                    
+                    // Atualizar no Supabase se estiver online
+                    if (isOnline && supabaseClient) {
+                        await supabaseClient
+                            .from('tools')
+                            .update({ 
+                                status: newStatus,
+                                updated_at: tool.updatedAt
+                            })
+                            .eq('id', toolId);
+                    }
+                }
+            } catch (error) {
+                console.error('Erro ao atualizar status da ferramenta:', error);
+            }
+        }
+
+        // ============================================
+        // FUNÇÕES DO SCANNER QR CODE
+        // ============================================
+        async function startScanner() {
+            try {
+                showNotification('Iniciando scanner...', 'info');
+
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    showNotification('Câmera não disponível neste dispositivo', 'error');
+                    return;
+                }
+
+                videoStream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: 'environment',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
+                });
+
+                const video = document.createElement('video');
+                video.id = 'scanner-video';
+                video.style.width = '100%';
+                video.style.height = '100%';
+                video.style.objectFit = 'cover';
+                video.setAttribute('playsinline', 'true');
+                video.setAttribute('autoplay', 'true');
+                video.setAttribute('muted', 'true');
+
+                const overlay = document.createElement('div');
+                overlay.className = 'scanner-overlay';
+                overlay.innerHTML = `
+                    <div class="scanner-frame">
+                        <div class="scanner-line"></div>
+                    </div>
+                `;
+
+                const container = document.getElementById('scannerContainer');
+                container.innerHTML = '';
+                container.appendChild(video);
+                container.appendChild(overlay);
+
+                video.srcObject = videoStream;
+
+                await new Promise((resolve, reject) => {
+                    video.onloadedmetadata = () => {
+                        video.play()
+                            .then(resolve)
+                            .catch(reject);
+                    };
+                });
+
+                document.getElementById('startScannerBtn').style.display = 'none';
+                document.getElementById('stopScannerBtn').style.display = 'block';
+                document.getElementById('scannerResult').style.display = 'none';
+
+                scannerActive = true;
+                startScanningLoop(video);
+                showNotification('Scanner ativo. Aponte para um QR Code.', 'success');
+
+            } catch (error) {
+                console.error('Erro ao iniciar scanner:', error);
+
+                if (error.name === 'NotAllowedError') {
+                    showNotification('Permissão da câmera negada', 'error');
+                } else if (error.name === 'NotFoundError') {
+                    showNotification('Câmera não encontrada', 'error');
+                } else {
+                    showNotification(`Erro: ${error.message}`, 'error');
+                }
+
+                resetScannerUI();
+            }
+        }
+
+        function startScanningLoop(video) {
+            const canvas = document.getElementById('qr-canvas');
+            const context = canvas.getContext('2d');
+
+            if (scanningInterval) {
+                clearInterval(scanningInterval);
+            }
+
+            scanningInterval = setInterval(() => {
+                if (!scannerActive || !video.readyState === video.HAVE_ENOUGH_DATA) {
+                    return;
+                }
+
+                if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                }
+
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+
+                try {
+                    const code = jsQR(imageData.data, imageData.width, imageData.height, {
+                        inversionAttempts: "dontInvert",
+                    });
+
+                    if (code) {
+                        handleQRCodeDetected(code.data);
+                    }
+                } catch (error) {
+                    console.log('Erro na leitura do QR Code:', error);
+                }
+            }, 250);
+        }
+
+        function handleQRCodeDetected(data) {
+            try {
+                console.log('========== QR CODE DETECTADO ==========');
+                console.log('Conteúdo bruto:', data);
+
+                stopScanner();
+
+                if (data.includes('?item=')) {
+                    const urlParams = new URLSearchParams(data.split('?')[1]);
+                    let itemId = urlParams.get('item');
+
+                    console.log('ID extraído da URL:', itemId);
+
+                    showNotification('Buscando item...', 'info');
+
+                    buscarItemLocal(itemId).then(toolLocal => {
+                        if (toolLocal) {
+                            console.log('✅ Item encontrado localmente!');
+                            currentScannedTool = toolLocal;
+                            showScannedToolResult(toolLocal);
+                        } else {
+                            console.log('❌ Item não encontrado localmente, buscando no Supabase...');
+                            showNotification('Item não está no cache. Buscando na nuvem...', 'warning');
+                            buscarItemNoSupabase(itemId, null, (tool) => {
+                                currentScannedTool = tool;
+                                showScannedToolResult(tool);
+                            });
+                        }
+                    });
+                }
+                else if (data.startsWith('{') && (data.includes('"id"') || data.includes('"cod"'))) {
+                    try {
+                        const parsedData = JSON.parse(data);
+                        const itemId = parsedData.id || parsedData.cod;
+
+                        if (itemId) {
+                            buscarItemLocal(itemId).then(toolLocal => {
+                                if (toolLocal) {
+                                    currentScannedTool = toolLocal;
+                                    showScannedToolResult(toolLocal);
+                                } else {
+                                    showNotification('Buscando item antigo na nuvem...', 'info');
+                                    buscarItemNoSupabase(itemId, parsedData, (tool) => {
+                                        currentScannedTool = tool;
+                                        showScannedToolResult(tool);
+                                    });
+                                }
+                            });
+                        }
+                    } catch (e) {
+                        showTextQRCode(data);
+                    }
+                }
+                else {
+                    showTextQRCode(data);
+                }
+
+            } catch (error) {
+                console.error('Erro ao processar QR Code:', error);
+                showNotification('Erro ao processar QR Code', 'error');
+                showTextQRCode(data);
+            }
+        }
+
+        function showScannedToolResult(tool) {
+            currentScannedData = tool;
+            
+            const scannedDataDiv = document.getElementById('scannedData');
+            const viewBtn = document.getElementById('viewScannedItemBtn');
+            const assignBtn = document.getElementById('assignScannedItemBtn');
+
+            // Verificar se ferramenta já está atribuída
+            const activeAssignment = assignments.find(a => a.tool_id == tool.id && a.status === 'active');
+            const isAvailable = tool.status === 'Disponível' || tool.status === 'Disponivel';
+
+            let statusHtml = '';
+            if (activeAssignment) {
+                statusHtml = `<p style="color: var(--danger-color); margin-top: 10px;"><i class="fas fa-exclamation-triangle"></i> Esta ferramenta já está atribuída a ${activeAssignment.collaborator_name}</p>`;
+            } else if (!isAvailable) {
+                statusHtml = `<p style="color: var(--warning-color); margin-top: 10px;"><i class="fas fa-exclamation-triangle"></i> Esta ferramenta não está disponível (Status: ${tool.status})</p>`;
+            }
+
+            scannedDataDiv.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                    <div class="thumbnail" style="width: 50px; height: 50px;">
+                        ${tool.image ? `<img src="${tool.image}" alt="${tool.name}" style="width:100%;height:100%;object-fit:cover;border-radius:8px;">` : '<i class="fas fa-tools"></i>'}
+                    </div>
+                    <div style="flex:1;">
+                        <h4>${tool.name}</h4>
+                        <p style="color: var(--gray-color); font-size: 12px;">${tool.code} | ${tool.location}</p>
+                    </div>
+                </div>
+                <p><strong>Status:</strong> <span style="color: ${getStatusColor(tool.status)}">${tool.status}</span></p>
+                <p><strong>Localização:</strong> ${tool.location}</p>
+                ${statusHtml}
+            `;
+
+            viewBtn.style.display = 'block';
+            
+            // Mostrar botão de atribuir apenas se estiver disponível e o usuário tiver permissão
+            if (canAssignTools() && isAvailable && !activeAssignment) {
+                assignBtn.style.display = 'block';
+            } else {
+                assignBtn.style.display = 'none';
+            }
+
+            document.getElementById('scannerResult').style.display = 'block';
+        }
+
+        function buscarItemLocal(itemId) {
+            return new Promise((resolve) => {
+                const idToFind = isNaN(itemId) ? itemId : Number(itemId);
+
+                let tool = tools.find(t => t.id == idToFind);
+
+                if (tool) {
+                    console.log('Item encontrado na memória');
+                    resolve(tool);
+                    return;
+                }
+
+                if (db) {
+                    const transaction = db.transaction(['tools'], 'readonly');
+                    const store = transaction.objectStore('tools');
+                    const request = store.get(idToFind);
+
+                    request.onsuccess = () => {
+                        if (request.result) {
+                            console.log('Item encontrado no IndexedDB');
+                            tools.push(request.result);
+                            resolve(request.result);
+                        } else {
+                            console.log('Item não encontrado no IndexedDB');
+                            resolve(null);
+                        }
+                    };
+
+                    request.onerror = () => {
+                        console.error('Erro ao buscar no IndexedDB');
+                        resolve(null);
+                    };
+                } else {
+                    resolve(null);
+                }
+            });
+        }
+
+        async function buscarItemNoSupabase(itemId, dadosAdicionais = null, callback = null) {
+            if (!supabaseClient) {
+                showNotification('Sem conexão com o Supabase', 'error');
+                return;
+            }
+
+            showLoader(true);
+
+            try {
+                console.log('🔍 Buscando item no Supabase. ID:', itemId);
+
+                let query = supabaseClient.from('tools').select('*');
+
+                if (!isNaN(itemId)) {
+                    query = query.eq('id', Number(itemId));
+                } else {
+                    query = query.eq('code', itemId);
+                }
+
+                const { data, error } = await query.maybeSingle();
+
+                if (error) {
+                    console.error('Erro na consulta:', error);
+                    throw error;
+                }
+
+                if (data) {
+                    const tool = await processarItemDoSupabase(data);
+                    if (callback) callback(tool);
+                } else {
+                    showNotification('Item não encontrado no Supabase', 'error');
+                }
+
+            } catch (error) {
+                console.error('❌ Erro ao buscar no Supabase:', error);
+                showNotification(`Erro: ${error.message}`, 'error');
+            } finally {
+                showLoader(false);
+            }
+        }
+
+        async function processarItemDoSupabase(item) {
+            try {
+                console.log('✅ Item encontrado no Supabase:', item);
+
+                const tool = {
+                    id: item.id,
+                    name: item.name,
+                    code: item.code,
+                    patrimonio: item.patrimonio,
+                    ncm: item.ncm,
+                    category: item.category,
+                    status: item.status,
+                    location: item.location,
+                    condition: item.condition,
+                    notaFiscal: item.nota_fiscal,
+                    unidade: item.unidade,
+                    preco: item.preco,
+                    quantidade: item.quantidade,
+                    estoqueMinimo: item.estoque_minimo,
+                    estoqueMaximo: item.estoque_maximo,
+                    description: item.description,
+                    observations: item.observations,
+                    image: item.image_url,
+                    usuarioCadastro: item.usuario_cadastro,
+                    dataCadastro: item.data_cadastro,
+                    createdAt: item.created_at,
+                    updatedAt: item.updated_at,
+                    qrCode: item.qr_code
+                };
+
+                // Verificar se já existe
+                const existingIndex = tools.findIndex(t => t.id == tool.id);
+                if (existingIndex >= 0) {
+                    tools[existingIndex] = tool;
+                } else {
+                    tools.push(tool);
+                }
+
+                await saveToIndexedDB(tools);
+
+                return tool;
+            } catch (error) {
+                console.error('Erro ao processar item do Supabase:', error);
+                return null;
+            }
+        }
+
+        function showTextQRCode(data) {
+            document.getElementById('scannerResult').style.display = 'block';
+            document.getElementById('scannedData').innerHTML = `
+                <div style="margin-bottom: 10px;">
+                    <strong style="color: var(--warning-color);">⚠ Texto Detectado</strong>
+                </div>
+                <p><strong>Conteúdo:</strong></p>
+                <div style="background: white; padding: 10px; border-radius: 5px; word-break: break-all;">
+                    ${data}
+                </div>
+            `;
+            
+            document.getElementById('viewScannedItemBtn').style.display = 'none';
+            document.getElementById('assignScannedItemBtn').style.display = 'none';
+        }
+
+        function stopScanner() {
+            scannerActive = false;
+
+            if (scanningInterval) {
+                clearInterval(scanningInterval);
+                scanningInterval = null;
+            }
+
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+                videoStream = null;
+            }
+
+            resetScannerUI();
+        }
+
+        function resetScannerUI() {
+            const container = document.getElementById('scannerContainer');
+            container.innerHTML = `
+                <i class="fas fa-qrcode" style="font-size: 60px; color: var(--gray-color); margin-bottom: 15px;"></i>
+                <p style="text-align: center; color: var(--gray-color);">Área do scanner</p>
+                <p style="text-align: center; font-size: 12px; color: var(--gray-color); margin-top: 10px;">
+                    Toque para ativar a câmera
+                </p>
+            `;
+
+            document.getElementById('startScannerBtn').style.display = 'block';
+            document.getElementById('stopScannerBtn').style.display = 'none';
+            document.getElementById('scannerResult').style.display = 'none';
+        }
+
+        // ============================================
+        // FUNÇÕES DE ATRIBUIÇÃO VIA SCANNER
+        // ============================================
+        function startAssignmentFromScan() {
+            if (!currentScannedTool) return;
+            
+            // Verificar se ferramenta está disponível
+            if (currentScannedTool.status !== 'Disponível' && currentScannedTool.status !== 'Disponivel') {
+                showNotification('Esta ferramenta não está disponível para atribuição', 'error');
+                return;
+            }
+
+            // Verificar se já está atribuída
+            const activeAssignment = assignments.find(a => a.tool_id == currentScannedTool.id && a.status === 'active');
+            if (activeAssignment) {
+                showNotification('Esta ferramenta já está atribuída a alguém', 'error');
+                return;
+            }
+
+            // Abrir modal de atribuição
+            showAssignModal(currentScannedTool);
+        }
+
+        async function showAssignModal(tool) {
+            if (!tool) return;
+
+            // Carregar colaboradores se necessário
+            if (collaborators.length === 0) {
+                await loadCollaborators();
+            }
+
+            const modalBody = document.getElementById('assignModalBody');
+            document.getElementById('assignModalTitle').textContent = `Atribuir: ${tool.name}`;
+
+            let collaboratorsHtml = '<p style="text-align: center; color: var(--gray-color);">Nenhum colaborador ativo encontrado</p>';
+
+            if (collaborators.length > 0) {
+                collaboratorsHtml = '<div style="max-height: 300px; overflow-y: auto;">';
+                collaborators.forEach(collab => {
+                    collaboratorsHtml += `
+                        <div class="collaborator-item" data-id="${collab.id}" onclick="selectCollaborator('${collab.id}')">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <strong>${collab.name}</strong>
+                                    <p style="font-size: 12px; color: var(--gray-color);">${collab.registration} | ${collab.position || 'N/A'}</p>
+                                </div>
+                                <div style="font-size: 12px; background: var(--light-color); padding: 4px 8px; border-radius: 4px;">
+                                    ${collab.sector}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                collaboratorsHtml += '</div>';
+            }
+
+            modalBody.innerHTML = `
+                <div class="tool-assignment-info">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div class="thumbnail" style="width: 50px; height: 50px;">
+                            ${tool.image ? `<img src="${tool.image}" alt="${tool.name}" style="width:100%;height:100%;object-fit:cover;border-radius:8px;">` : '<i class="fas fa-tools"></i>'}
+                        </div>
+                        <div>
+                            <h4>${tool.name}</h4>
+                            <p style="color: var(--gray-color);">${tool.code} | ${tool.location}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h4 style="margin-bottom: 15px;">Selecione o Colaborador:</h4>
+                
+                <div style="margin-bottom: 15px;">
+                    <input type="text" id="searchCollaborator" placeholder="Buscar colaborador..." style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px;">
+                </div>
+
+                <div id="collaboratorsList">
+                    ${collaboratorsHtml}
+                </div>
+
+                <div class="assignment-actions">
+                    <button id="confirmAssignBtn" class="mobile-btn" style="background: var(--assign-color); color: white; flex: 2;" disabled>
+                        <i class="fas fa-check"></i> Confirmar Atribuição
+                    </button>
+                    <button id="cancelAssignBtn" class="mobile-btn" style="background: var(--gray-color); color: white; flex: 1;">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                </div>
+            `;
+
+            document.getElementById('assignModal').style.display = 'flex';
+            assignmentInProgress = { tool, selectedCollaboratorId: null };
+
+            // Adicionar eventos
+            document.getElementById('searchCollaborator').addEventListener('input', function() {
+                const term = this.value.toLowerCase();
+                filterCollaborators(term);
+            });
+
+            document.getElementById('cancelAssignBtn').addEventListener('click', closeAssignModal);
+
+            document.getElementById('confirmAssignBtn').addEventListener('click', async function() {
+                if (assignmentInProgress && assignmentInProgress.selectedCollaboratorId) {
+                    const success = await assignTool(
+                        assignmentInProgress.tool.id, 
+                        assignmentInProgress.selectedCollaboratorId
+                    );
+                    
+                    if (success) {
+                        closeAssignModal();
+                        switchTab('assignments');
+                    }
+                }
+            });
+        }
+
+        function selectCollaborator(collaboratorId) {
+            // Remover seleção anterior
+            document.querySelectorAll('.collaborator-item').forEach(el => {
+                el.classList.remove('selected');
+            });
+
+            // Adicionar seleção ao item clicado
+            const selectedEl = document.querySelector(`.collaborator-item[data-id="${collaboratorId}"]`);
+            if (selectedEl) {
+                selectedEl.classList.add('selected');
+            }
+
+            // Atualizar variável de controle
+            if (assignmentInProgress) {
+                assignmentInProgress.selectedCollaboratorId = collaboratorId;
+            }
+
+            // Habilitar botão de confirmação
+            document.getElementById('confirmAssignBtn').disabled = false;
+        }
+
+        function filterCollaborators(term) {
+            const items = document.querySelectorAll('.collaborator-item');
+            
+            items.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(term)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        // ============================================
+        // FUNÇÕES DE LISTAGEM DE ATRIBUIÇÕES
+        // ============================================
+        function showAssignmentsList(showActive = true) {
+            const listElement = document.getElementById('assignmentsList');
+            
+            let filteredAssignments = showActive 
+                ? assignments.filter(a => a.status === 'active')
+                : assignments;
+
+            if (filteredAssignments.length === 0) {
+                listElement.innerHTML = `
+                    <div class="card" style="text-align: center; padding: 40px 20px;">
+                        <i class="fas fa-clipboard-list" style="font-size: 60px; color: var(--gray-color); margin-bottom: 20px;"></i>
+                        <p style="color: var(--gray-color);">Nenhuma atribuição ${showActive ? 'ativa' : ''} encontrada</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            filteredAssignments.forEach(assignment => {
+                const tool = tools.find(t => t.id == assignment.tool_id);
+                const isActive = assignment.status === 'active';
+                
+                html += `
+                    <div class="assignment-card" style="border-left-color: ${isActive ? 'var(--assign-color)' : 'var(--gray-color)'};">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                            <h4>${assignment.tool_name}</h4>
+                            <span class="status-badge ${isActive ? 'status-in-use' : 'status-available'}">
+                                ${isActive ? 'ATIVA' : 'FINALIZADA'}
+                            </span>
+                        </div>
+                        
+                        <p><i class="fas fa-user" style="width: 20px; color: var(--gray-color);"></i> ${assignment.collaborator_name} (${assignment.collaborator_registration})</p>
+                        <p><i class="fas fa-calendar" style="width: 20px; color: var(--gray-color);"></i> Atribuição: ${formatDate(assignment.assignment_date)}</p>
+                        
+                        ${assignment.actual_return_date ? 
+                            `<p><i class="fas fa-calendar-check" style="width: 20px; color: var(--gray-color);"></i> Devolução: ${formatDate(assignment.actual_return_date)}</p>` : 
+                            ''}
+                        
+                        <p><i class="fas fa-user-tag" style="width: 20px; color: var(--gray-color);"></i> Responsável: ${assignment.user_assigned}</p>
+                        
+                        ${tool && tool.image ? 
+                            `<div style="margin-top: 10px;">
+                                <img src="${tool.image}" alt="${tool.name}" style="width: 40px; height: 40px; border-radius: 4px; object-fit: cover;">
+                            </div>` : 
+                            ''}
+                        
+                        ${isActive && canAssignTools() ? 
+                            `<button class="mobile-btn" onclick="returnTool('${assignment.id}')" style="margin-top: 15px; background: var(--success-color); color: white;">
+                                <i class="fas fa-undo-alt"></i> Registrar Devolução
+                            </button>` : 
+                            ''}
+                    </div>
+                `;
+            });
+
+            listElement.innerHTML = html;
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('pt-BR');
         }
 
         // ============================================
@@ -1174,6 +2202,9 @@
                     `<img src="${tool.image}" alt="${tool.name}" style="width:40px;height:40px;border-radius:8px;object-fit:cover;" onerror="this.parentElement.innerHTML='<i class=\'fas fa-tools\'></i>'">` :
                     `<i class="fas fa-tools"></i>`;
 
+                // Verificar se está atribuído
+                const activeAssignment = assignments.find(a => a.tool_id == tool.id && a.status === 'active');
+
                 html += `
                     <div style="display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid #f0f0f0;">
                         <div class="thumbnail" style="width: 40px; height: 40px; margin-right: 12px;">
@@ -1182,6 +2213,9 @@
                         <div style="flex: 1;">
                             <div style="font-weight: 500; font-size: 14px;">${tool.name}</div>
                             <div style="font-size: 12px; color: var(--gray-color);">${tool.code} | ${tool.location}</div>
+                            ${activeAssignment ? 
+                                `<div style="font-size: 11px; color: var(--assign-color);"><i class="fas fa-hand-holding"></i> ${activeAssignment.collaborator_name}</div>` : 
+                                ''}
                         </div>
                         <div style="font-size: 14px; font-weight: 500; color: ${getStatusColor(tool.status)};">
                             ${tool.status}
@@ -1412,7 +2446,7 @@
                 tools.unshift(novoItem);
                 await saveToIndexedDB(tools);
 
-                if (supabaseClient) {
+                if (supabaseClient && isOnline) {
                     await saveItemToSupabase(novoItem);
                 }
 
@@ -1579,6 +2613,10 @@
                 await saveToIndexedDB(convertedTools);
                 tools = await loadFromIndexedDB(999999);
 
+                // Carregar colaboradores e atribuições
+                await loadCollaborators();
+                await loadAssignments();
+
                 updateUI();
 
                 localStorage.setItem('lastSync', new Date().toISOString());
@@ -1603,363 +2641,10 @@
         }
 
         // ============================================
-        // FUNÇÕES DO SCANNER QR CODE
-        // ============================================
-        async function startScanner() {
-            try {
-                showNotification('Iniciando scanner...', 'info');
-
-                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                    showNotification('Câmera não disponível neste dispositivo', 'error');
-                    return;
-                }
-
-                videoStream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        facingMode: 'environment',
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
-                    }
-                });
-
-                const video = document.createElement('video');
-                video.id = 'scanner-video';
-                video.style.width = '100%';
-                video.style.height = '100%';
-                video.style.objectFit = 'cover';
-                video.setAttribute('playsinline', 'true');
-                video.setAttribute('autoplay', 'true');
-                video.setAttribute('muted', 'true');
-
-                const overlay = document.createElement('div');
-                overlay.className = 'scanner-overlay';
-                overlay.innerHTML = `
-                    <div class="scanner-frame">
-                        <div class="scanner-line"></div>
-                    </div>
-                `;
-
-                const container = document.getElementById('scannerContainer');
-                container.innerHTML = '';
-                container.appendChild(video);
-                container.appendChild(overlay);
-
-                video.srcObject = videoStream;
-
-                await new Promise((resolve, reject) => {
-                    video.onloadedmetadata = () => {
-                        video.play()
-                            .then(resolve)
-                            .catch(reject);
-                    };
-                });
-
-                document.getElementById('startScannerBtn').style.display = 'none';
-                document.getElementById('stopScannerBtn').style.display = 'block';
-                document.getElementById('scannerResult').style.display = 'none';
-
-                scannerActive = true;
-                startScanningLoop(video);
-                showNotification('Scanner ativo. Aponte para um QR Code.', 'success');
-
-            } catch (error) {
-                console.error('Erro ao iniciar scanner:', error);
-
-                if (error.name === 'NotAllowedError') {
-                    showNotification('Permissão da câmera negada', 'error');
-                } else if (error.name === 'NotFoundError') {
-                    showNotification('Câmera não encontrada', 'error');
-                } else {
-                    showNotification(`Erro: ${error.message}`, 'error');
-                }
-
-                resetScannerUI();
-            }
-        }
-
-        function startScanningLoop(video) {
-            const canvas = document.getElementById('qr-canvas');
-            const context = canvas.getContext('2d');
-
-            if (scanningInterval) {
-                clearInterval(scanningInterval);
-            }
-
-            scanningInterval = setInterval(() => {
-                if (!scannerActive || !video.readyState === video.HAVE_ENOUGH_DATA) {
-                    return;
-                }
-
-                if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
-                    canvas.width = video.videoWidth;
-                    canvas.height = video.videoHeight;
-                }
-
-                context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-
-                try {
-                    const code = jsQR(imageData.data, imageData.width, imageData.height, {
-                        inversionAttempts: "dontInvert",
-                    });
-
-                    if (code) {
-                        handleQRCodeDetected(code.data);
-                    }
-                } catch (error) {
-                    console.log('Erro na leitura do QR Code:', error);
-                }
-            }, 250);
-        }
-
-        function handleQRCodeDetected(data) {
-            try {
-                console.log('========== QR CODE DETECTADO ==========');
-                console.log('Conteúdo bruto:', data);
-
-                stopScanner();
-
-                if (data.includes('?item=')) {
-                    const urlParams = new URLSearchParams(data.split('?')[1]);
-                    let itemId = urlParams.get('item');
-
-                    console.log('ID extraído da URL:', itemId);
-
-                    showNotification('Buscando item...', 'info');
-
-                    buscarItemLocal(itemId).then(toolLocal => {
-                        if (toolLocal) {
-                            console.log('✅ Item encontrado localmente!');
-                            showToolDetails(toolLocal.id);
-                        } else {
-                            console.log('❌ Item não encontrado localmente, buscando no Supabase...');
-                            showNotification('Item não está no cache. Buscando na nuvem...', 'warning');
-                            buscarItemNoSupabase(itemId);
-                        }
-                    });
-                }
-                else if (data.startsWith('{') && (data.includes('"id"') || data.includes('"cod"'))) {
-                    try {
-                        const parsedData = JSON.parse(data);
-                        const itemId = parsedData.id || parsedData.cod;
-
-                        if (itemId) {
-                            buscarItemLocal(itemId).then(toolLocal => {
-                                if (toolLocal) {
-                                    showToolDetails(toolLocal.id);
-                                } else {
-                                    showNotification('Buscando item antigo na nuvem...', 'info');
-                                    buscarItemNoSupabase(itemId, parsedData);
-                                }
-                            });
-                        }
-                    } catch (e) {
-                        showTextQRCode(data);
-                    }
-                }
-                else {
-                    showTextQRCode(data);
-                }
-
-            } catch (error) {
-                console.error('Erro ao processar QR Code:', error);
-                showNotification('Erro ao processar QR Code', 'error');
-                showTextQRCode(data);
-            }
-        }
-
-        function buscarItemLocal(itemId) {
-            return new Promise((resolve) => {
-                const idToFind = isNaN(itemId) ? itemId : Number(itemId);
-
-                let tool = tools.find(t => t.id == idToFind);
-
-                if (tool) {
-                    console.log('Item encontrado na memória');
-                    resolve(tool);
-                    return;
-                }
-
-                if (db) {
-                    const transaction = db.transaction(['tools'], 'readonly');
-                    const store = transaction.objectStore('tools');
-                    const request = store.get(idToFind);
-
-                    request.onsuccess = () => {
-                        if (request.result) {
-                            console.log('Item encontrado no IndexedDB');
-                            tools.push(request.result);
-                            resolve(request.result);
-                        } else {
-                            console.log('Item não encontrado no IndexedDB');
-                            resolve(null);
-                        }
-                    };
-
-                    request.onerror = () => {
-                        console.error('Erro ao buscar no IndexedDB');
-                        resolve(null);
-                    };
-                } else {
-                    resolve(null);
-                }
-            });
-        }
-
-        async function buscarItemNoSupabase(itemId, dadosAdicionais = null) {
-            if (!supabaseClient) {
-                showNotification('Sem conexão com o Supabase', 'error');
-                return;
-            }
-
-            showLoader(true);
-
-            try {
-                console.log('🔍 Buscando item no Supabase. ID:', itemId);
-
-                let query = supabaseClient.from('tools').select('*');
-
-                if (!isNaN(itemId)) {
-                    query = query.eq('id', Number(itemId));
-                } else {
-                    query = query.eq('code', itemId);
-                }
-
-                const { data, error } = await query.single();
-
-                if (error) {
-                    console.error('Erro na consulta:', error);
-
-                    if (dadosAdicionais) {
-                        console.log('Tentando busca alternativa com dados adicionais:', dadosAdicionais);
-
-                        let fallbackQuery = supabaseClient.from('tools').select('*');
-
-                        if (dadosAdicionais.codigo) {
-                            fallbackQuery = fallbackQuery.eq('code', dadosAdicionais.codigo);
-                        } else if (dadosAdicionais.nome) {
-                            fallbackQuery = fallbackQuery.ilike('name', `%${dadosAdicionais.nome}%`);
-                        }
-
-                        const { data: fallbackData, error: fallbackError } = await fallbackQuery.maybeSingle();
-
-                        if (fallbackData) {
-                            await processarItemDoSupabase(fallbackData);
-                            return;
-                        }
-                    }
-
-                    throw error;
-                }
-
-                if (data) {
-                    await processarItemDoSupabase(data);
-                } else {
-                    showNotification('Item não encontrado no Supabase', 'error');
-                }
-
-            } catch (error) {
-                console.error('❌ Erro ao buscar no Supabase:', error);
-                showNotification(`Erro: ${error.message}`, 'error');
-            } finally {
-                showLoader(false);
-            }
-        }
-
-        async function processarItemDoSupabase(item) {
-            try {
-                console.log('✅ Item encontrado no Supabase:', item);
-
-                const tool = {
-                    id: item.id,
-                    name: item.name,
-                    code: item.code,
-                    patrimonio: item.patrimonio,
-                    ncm: item.ncm,
-                    category: item.category,
-                    status: item.status,
-                    location: item.location,
-                    condition: item.condition,
-                    notaFiscal: item.nota_fiscal,
-                    unidade: item.unidade,
-                    preco: item.preco,
-                    quantidade: item.quantidade,
-                    estoqueMinimo: item.estoque_minimo,
-                    estoqueMaximo: item.estoque_maximo,
-                    description: item.description,
-                    observations: item.observations,
-                    image: item.image_url,
-                    usuarioCadastro: item.usuario_cadastro,
-                    dataCadastro: item.data_cadastro,
-                    createdAt: item.created_at,
-                    updatedAt: item.updated_at,
-                    qrCode: item.qr_code
-                };
-
-                tools.push(tool);
-                await saveToIndexedDB(tools);
-
-                showNotification('Item buscado da nuvem com sucesso!', 'success');
-
-                setTimeout(() => {
-                    showToolDetails(tool.id);
-                }, 500);
-
-            } catch (error) {
-                console.error('Erro ao processar item do Supabase:', error);
-                showNotification('Erro ao salvar item localmente', 'error');
-            }
-        }
-
-        function showTextQRCode(data) {
-            document.getElementById('scannerResult').style.display = 'block';
-            document.getElementById('scannedData').innerHTML = `
-                <div style="margin-bottom: 10px;">
-                    <strong style="color: var(--warning-color);">⚠ Texto Detectado</strong>
-                </div>
-                <p><strong>Conteúdo:</strong></p>
-                <div style="background: white; padding: 10px; border-radius: 5px; word-break: break-all;">
-                    ${data}
-                </div>
-            `;
-        }
-
-        function stopScanner() {
-            scannerActive = false;
-
-            if (scanningInterval) {
-                clearInterval(scanningInterval);
-                scanningInterval = null;
-            }
-
-            if (videoStream) {
-                videoStream.getTracks().forEach(track => track.stop());
-                videoStream = null;
-            }
-
-            resetScannerUI();
-        }
-
-        function resetScannerUI() {
-            const container = document.getElementById('scannerContainer');
-            container.innerHTML = `
-                <i class="fas fa-qrcode" style="font-size: 60px; color: var(--gray-color); margin-bottom: 15px;"></i>
-                <p style="text-align: center; color: var(--gray-color);">Área do scanner</p>
-                <p style="text-align: center; font-size: 12px; color: var(--gray-color); margin-top: 10px;">
-                    Toque para ativar a câmera
-                </p>
-            `;
-
-            document.getElementById('startScannerBtn').style.display = 'block';
-            document.getElementById('stopScannerBtn').style.display = 'none';
-            document.getElementById('scannerResult').style.display = 'none';
-        }
-
-        // ============================================
         // INDEXEDDB
         // ============================================
         const DB_NAME = 'FerramentasDB';
-        const DB_VERSION = 1;
+        const DB_VERSION = 2;
         const STORE_NAME = 'tools';
 
         function initIndexedDB() {
@@ -1984,6 +2669,7 @@
 
                 request.onupgradeneeded = (event) => {
                     const db = event.target.result;
+                    const oldVersion = event.oldVersion;
 
                     if (!db.objectStoreNames.contains(STORE_NAME)) {
                         const store = db.createObjectStore(STORE_NAME, {
@@ -1995,6 +2681,9 @@
                         store.createIndex('status', 'status', { unique: false });
                         store.createIndex('updatedAt', 'updatedAt', { unique: false });
                     }
+
+                    // Se for atualização de versão, manter dados existentes
+                    console.log(`🔄 IndexedDB atualizado da versão ${oldVersion} para ${DB_VERSION}`);
                 };
             });
         }
@@ -2109,6 +2798,11 @@
             const totalInDB = localStorage.getItem('totalItems') || tools.length;
             document.getElementById('totalItems').textContent = `${tools.length}/${totalInDB}`;
 
+            // Atualizar contador de atribuições ativas
+            const activeCount = assignments.filter(a => a.status === 'active').length;
+            document.getElementById('assignedCount').textContent = activeCount;
+            document.getElementById('localAssignmentsCount').textContent = assignments.length;
+
             // Atualizar valor total apenas se tiver permissão
             if (canViewFinancial()) {
                 const totalValue = tools.reduce((sum, tool) => {
@@ -2129,6 +2823,8 @@
 
             if (currentTab === 'catalogo') {
                 updateToolsList();
+            } else if (currentTab === 'assignments') {
+                showAssignmentsList(true);
             }
         }
 
@@ -2197,6 +2893,10 @@
                     `<img src="${tool.image}" alt="${tool.name}" onerror="this.parentElement.innerHTML='<i class=\'fas fa-tools\'></i>'">` :
                     `<i class="fas fa-tools"></i>`;
 
+                // Verificar se está atribuído
+                const activeAssignment = assignments.find(a => a.tool_id == tool.id && a.status === 'active');
+                const isAvailable = tool.status === 'Disponível' || tool.status === 'Disponivel';
+
                 html += `
                     <div class="card" style="margin-bottom: 10px; padding: 15px;" data-id="${tool.id}">
                         <div style="display: flex; align-items: start; margin-bottom: 10px;">
@@ -2213,6 +2913,11 @@
                                     <span style="font-size: 12px; color: var(--gray-color);">${tool.location}</span>
                                     <span style="font-size: 12px; color: var(--gray-color);">Qtd: ${tool.quantidade || 1}</span>
                                 </div>
+                                ${activeAssignment ? 
+                                    `<div style="font-size: 12px; margin-top: 5px; color: var(--assign-color);">
+                                        <i class="fas fa-hand-holding"></i> ${activeAssignment.collaborator_name}
+                                    </div>` : 
+                                    ''}
                             </div>
                         </div>
                         
@@ -2221,8 +2926,18 @@
                                 <i class="fas fa-eye"></i> Ver
                             </button>
                             <button class="action-btn qr" data-id="${tool.id}">
-                                <i class="fas fa-qrcode"></i> QR Code
+                                <i class="fas fa-qrcode"></i> QR
                             </button>
+                            ${!restricted && isAvailable && !activeAssignment ? 
+                                `<button class="action-btn assign" data-id="${tool.id}">
+                                    <i class="fas fa-hand-holding"></i> Atribuir
+                                </button>` : 
+                                ''}
+                            ${!restricted && activeAssignment ? 
+                                `<button class="action-btn return" data-id="${activeAssignment.id}" onclick="returnTool('${activeAssignment.id}')">
+                                    <i class="fas fa-undo-alt"></i> Devolver
+                                </button>` : 
+                                ''}
                         </div>
                     </div>
                 `;
@@ -2243,6 +2958,17 @@
                     e.stopPropagation();
                     const toolId = this.getAttribute('data-id');
                     generateQRCode(toolId);
+                });
+            });
+
+            document.querySelectorAll('.action-btn.assign').forEach(btn => {
+                btn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    const toolId = this.getAttribute('data-id');
+                    const tool = tools.find(t => t.id == toolId);
+                    if (tool) {
+                        showAssignModal(tool);
+                    }
                 });
             });
 
@@ -2270,11 +2996,27 @@
                     <p style="margin-top: 10px; color: var(--gray-color);">Sem imagem</p>
                 </div>`;
 
+            // Verificar atribuição atual
+            const activeAssignment = assignments.find(a => a.tool_id == tool.id && a.status === 'active');
+            const assignmentInfo = activeAssignment ? 
+                `<div style="margin-top: 15px; background: #8e44ad20; padding: 15px; border-radius: 8px; border-left: 4px solid var(--assign-color);">
+                    <h4 style="margin-bottom: 10px; color: var(--assign-color);"><i class="fas fa-hand-holding"></i> Atribuição Ativa</h4>
+                    <p><strong>Colaborador:</strong> ${activeAssignment.collaborator_name}</p>
+                    <p><strong>Data:</strong> ${formatDate(activeAssignment.assignment_date)}</p>
+                    <p><strong>Responsável:</strong> ${activeAssignment.user_assigned}</p>
+                    ${!restricted ? 
+                        `<button class="mobile-btn" onclick="returnTool('${activeAssignment.id}')" style="margin-top: 10px; background: var(--success-color); color: white;">
+                            <i class="fas fa-undo-alt"></i> Registrar Devolução
+                        </button>` : 
+                        ''}
+                </div>` : 
+                '';
+
             document.getElementById('modalTitle').textContent = tool.name;
 
-            // Construir HTML dos detalhes
             let detailsHtml = `
                 ${imageHTML}
+                ${assignmentInfo}
                 
                 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 20px;">
                     <div><strong>Código:</strong><br>${tool.code}</div>
@@ -2450,7 +3192,11 @@
 
                             if (supabaseClient) {
                                 showNotification('Buscando item da URL na nuvem...', 'info');
-                                buscarItemNoSupabase(itemId);
+                                buscarItemNoSupabase(itemId, null, (tool) => {
+                                    if (tool) {
+                                        showToolDetails(tool.id);
+                                    }
+                                });
                             }
                         }
                     });
@@ -2486,10 +3232,19 @@
                 },
                 'raquel@fwcompany.com.br': {
                     password: 'RaqueL1234',
-                    role: 'user',
+                    role: 'dev',
                     name: 'Raquel',
                     email: 'raquel@fwcompany.com.br'
-                }
+                },
+                'fwuser': {
+                    password: 'User123',
+                    role: 'user',
+                    name: 'Usuário Genérico',
+                    email: 'fwuser@fwcompany.com.br'
+                },
+
+
+
             };
 
             if (users[email] && users[email].password === password) {
@@ -2569,11 +3324,17 @@
         // ============================================
         function getStatusColor(status) {
             switch (status) {
-                case 'Disponível': return '#27ae60';
-                case 'Em Uso': return '#3498db';
-                case 'Manutenção': return '#f39c12';
-                case 'Danificado': return '#e74c3c';
-                default: return '#95a5a6';
+                case 'Disponível':
+                case 'Disponivel':
+                    return '#27ae60';
+                case 'Em Uso':
+                    return '#3498db';
+                case 'Manutenção':
+                    return '#f39c12';
+                case 'Danificado':
+                    return '#e74c3c';
+                default:
+                    return '#95a5a6';
             }
         }
 
@@ -2637,7 +3398,7 @@
         }
 
         function showUserProfile() {
-            alert(`Perfil do Usuário:\n\nNome: ${currentUser.name}\nEmail: ${currentUser.email}\nFunção: ${currentUser.role}\nPermissões: ${canCreateItems() ? '✅ Pode cadastrar' : '❌ Não pode cadastrar'} | ${canViewFinancial() ? '✅ Vê valores' : '❌ Não vê valores'}`);
+            alert(`Perfil do Usuário:\n\nNome: ${currentUser.name}\nEmail: ${currentUser.email}\nFunção: ${currentUser.role}\nPermissões: ${canCreateItems() ? '✅ Pode cadastrar' : '❌ Não pode cadastrar'} | ${canViewFinancial() ? '✅ Vê valores' : '❌ Não vê valores'} | ${canAssignTools() ? '✅ Pode atribuir' : '❌ Não pode atribuir'}`);
             closeMenu();
         }
 
@@ -2658,12 +3419,12 @@
 
         function showAbout() {
             closeMenu();
-            alert('Sistema de Ferramentas Mobile v2.1\n\nDesenvolvido por Fábio Mendes Rodrigues.\n\n© 2026 FW Company');
+            alert('Sistema de Ferramentas Mobile v3\n\nDesenvolvido por Fábio Mendes Rodrigues.\n\n© 2026 FW Company');
         }
 
         function showHelp() {
             closeMenu();
-            alert('Ajuda do Sistema:\n\n1. Dashboard: Visão geral\n2. Novo: Cadastrar itens (restrito para usuário genérico)\n3. Itens: Lista completa\n4. Scanner: Ler QR Codes\n5. Config: Configurações\n\nUse o menu para mais opções.');
+            alert('Ajuda do Sistema:\n\n1. Dashboard: Visão geral\n2. Novo: Cadastrar itens (restrito para usuário genérico)\n3. Itens: Lista completa\n4. Scanner: Ler QR Codes\n5. Atribuições: Gerenciar ferramentas atribuídas\n6. Config: Configurações\n\nUse o menu para mais opções.');
         }
 
         // ============================================
@@ -2701,6 +3462,35 @@
             const stopScannerBtn = document.getElementById('stopScannerBtn');
             if (stopScannerBtn) {
                 stopScannerBtn.addEventListener('click', stopScanner);
+            }
+
+            const viewScannedItemBtn = document.getElementById('viewScannedItemBtn');
+            if (viewScannedItemBtn) {
+                viewScannedItemBtn.addEventListener('click', function() {
+                    if (currentScannedTool) {
+                        closeItemModal();
+                        showToolDetails(currentScannedTool.id);
+                    }
+                });
+            }
+
+            const assignScannedItemBtn = document.getElementById('assignScannedItemBtn');
+            if (assignScannedItemBtn) {
+                assignScannedItemBtn.addEventListener('click', function() {
+                    if (currentScannedTool && canAssignTools()) {
+                        stopScanner();
+                        showAssignModal(currentScannedTool);
+                    }
+                });
+            }
+
+            const scanAgainBtn = document.getElementById('scanAgainBtn');
+            if (scanAgainBtn) {
+                scanAgainBtn.addEventListener('click', function() {
+                    document.getElementById('scannerResult').style.display = 'none';
+                    currentScannedTool = null;
+                    startScanner();
+                });
             }
 
             document.querySelectorAll('.tab-button').forEach(btn => {
@@ -2760,10 +3550,36 @@
                 });
             }
 
+            const assignToolBtn = document.getElementById('assignToolBtn');
+            if (assignToolBtn) {
+                assignToolBtn.addEventListener('click', () => {
+                    if (canAssignTools()) {
+                        switchTab('scanner');
+                        showNotification('Escaneie o QR Code da ferramenta para atribuir', 'info');
+                    } else {
+                        showNotification('Você não tem permissão para atribuir ferramentas', 'error');
+                    }
+                });
+            }
+
             const viewAllBtn = document.getElementById('viewAllBtn');
             if (viewAllBtn) {
                 viewAllBtn.addEventListener('click', () => {
                     switchTab('catalogo');
+                });
+            }
+
+            const showActiveAssignments = document.getElementById('showActiveAssignments');
+            if (showActiveAssignments) {
+                showActiveAssignments.addEventListener('click', () => {
+                    showAssignmentsList(true);
+                });
+            }
+
+            const showAllAssignments = document.getElementById('showAllAssignments');
+            if (showAllAssignments) {
+                showAllAssignments.addEventListener('click', () => {
+                    showAssignmentsList(false);
                 });
             }
 
@@ -2785,6 +3601,13 @@
                 loadMoreBtn.addEventListener('click', () => {
                     loadedToolsCount += 50;
                     updateToolsList();
+                });
+            }
+
+            const saveConfigBtn = document.getElementById('saveConfigBtn');
+            if (saveConfigBtn) {
+                saveConfigBtn.addEventListener('click', () => {
+                    showNotification('Configurações salvas!', 'success');
                 });
             }
 
@@ -2833,8 +3656,16 @@
                 case 'scanner':
                     document.getElementById('tabScanner').style.display = 'block';
                     break;
+                case 'assignments':
+                    document.getElementById('tabAssignments').style.display = 'block';
+                    showAssignmentsList(true);
+                    break;
                 case 'config':
                     document.getElementById('tabConfig').style.display = 'block';
+                    document.getElementById('localItemsCount').textContent = tools.length;
+                    document.getElementById('localAssignmentsCount').textContent = assignments.length;
+                    document.getElementById('lastSyncTime').textContent = localStorage.getItem('lastSync') ? 
+                        new Date(localStorage.getItem('lastSync')).toLocaleString() : 'Nunca';
                     break;
             }
         }
@@ -2861,6 +3692,10 @@
                 console.log(`📁 ${tools.length} itens carregados`);
 
                 await connectToSupabase();
+
+                // Carregar colaboradores e atribuições
+                await loadCollaborators();
+                await loadAssignments();
 
                 updateUI();
                 updateSyncInfo();
