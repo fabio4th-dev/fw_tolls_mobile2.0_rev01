@@ -1269,6 +1269,119 @@
             });
             console.log('✅ Botões configurados com sucesso!');
         }
+
+        // ============================================
+        // CORREÇÃO PARA BOTÕES NO IPHONE
+        // ============================================
+        function fixIPhoneButtons() {
+            console.log('📱 Corrigindo botões para iPhone...');
+
+            // Corrigir botão "Escanear para pegar" na tela de atribuições
+            const scanButtons = document.querySelectorAll('[onclick="switchTab(\'scanner\')"]');
+            scanButtons.forEach(btn => {
+                // Remover atributo onclick e adicionar event listener
+                btn.removeAttribute('onclick');
+                btn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    console.log('👆 Botão escanear clicado');
+
+                    // Ativar a tab scanner
+                    const scannerTab = document.querySelector('.tab-button[data-tab="scanner"]');
+                    if (scannerTab) {
+                        scannerTab.click();
+                    } else {
+                        // Fallback
+                        switchTab('scanner');
+                    }
+                });
+            });
+
+            // Corrigir todos os botões que usam onclick
+            document.querySelectorAll('[onclick]').forEach(btn => {
+                const onclickValue = btn.getAttribute('onclick');
+                if (onclickValue && onclickValue.includes('switchTab')) {
+                    btn.removeAttribute('onclick');
+                    btn.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        const match = onclickValue.match(/'([^']+)'/);
+                        if (match && match[1]) {
+                            const tab = match[1];
+                            const tabBtn = document.querySelector(`.tab-button[data-tab="${tab}"]`);
+                            if (tabBtn) {
+                                tabBtn.click();
+                            }
+                        }
+                    });
+                }
+            });
+
+            console.log('✅ Botões do iPhone corrigidos!');
+        }
+        // ============================================
+        // CORREÇÃO PARA BOTÕES NO IPHONE
+        // ============================================
+        function fixIPhoneButtons() {
+            console.log('📱 Corrigindo botões para iPhone...');
+
+            // Corrigir botão "Escanear para pegar" na tela de atribuições
+            const scanButtons = document.querySelectorAll('[onclick="switchTab(\'scanner\')"]');
+            scanButtons.forEach(btn => {
+                // Remover atributo onclick e adicionar event listener
+                btn.removeAttribute('onclick');
+                btn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    console.log('👆 Botão escanear clicado');
+
+                    // Ativar a tab scanner
+                    const scannerTab = document.querySelector('.tab-button[data-tab="scanner"]');
+                    if (scannerTab) {
+                        scannerTab.click();
+                    } else {
+                        // Fallback
+                        switchTab('scanner');
+                    }
+                });
+            });
+
+            // Corrigir todos os botões que usam onclick
+            document.querySelectorAll('[onclick]').forEach(btn => {
+                const onclickValue = btn.getAttribute('onclick');
+                if (onclickValue && onclickValue.includes('switchTab')) {
+                    btn.removeAttribute('onclick');
+                    btn.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        const match = onclickValue.match(/'([^']+)'/);
+                        if (match && match[1]) {
+                            const tab = match[1];
+                            const tabBtn = document.querySelector(`.tab-button[data-tab="${tab}"]`);
+                            if (tabBtn) {
+                                tabBtn.click();
+                            }
+                        }
+                    });
+                }
+            });
+
+            console.log('✅ Botões do iPhone corrigidos!');
+        }
+// Corrigir botão de escanear no iPhone
+setTimeout(() => {
+    const scanBtn = document.querySelector('.scan-take-btn');
+    if (scanBtn) {
+        scanBtn.removeAttribute('onclick');
+        scanBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('👆 Botão escanear clicado na lista');
+            const scannerTab = document.querySelector('.tab-button[data-tab="scanner"]');
+            if (scannerTab) {
+                scannerTab.click();
+            }
+        });
+    }
+}, 100);
+
+
         // ============================================
         // FUNÇÕES DE VERIFICAÇÃO DE PERFIL
         // ============================================
@@ -1705,9 +1818,9 @@
                         <div class="card" style="text-align: center; padding: 40px 20px;">
                             <i class="fas fa-clipboard-list" style="font-size: 60px; color: var(--gray-color); margin-bottom: 20px;"></i>
                             <p style="color: var(--gray-color);">Você não tem ferramentas atribuídas</p>
-                            <button class="mobile-btn" onclick="switchTab('scanner')" style="background: var(--collab-color); color: white; margin-top: 15px; cursor: pointer;">
-                                <i class="fas fa-qrcode"></i> Escanear para pegar
-                            </button>
+                        <button class="mobile-btn scan-take-btn" style="background: var(--collab-color); color: white; margin-top: 15px; cursor: pointer;" data-tab="scanner">
+                            <i class="fas fa-qrcode"></i> Escanear para pegar
+                        </button>
                         </div>
                     `;
                     return;
@@ -2058,12 +2171,15 @@
                     userName.textContent = currentUser.name;
                 }
             }
+
             // Configurar interface baseada no papel
             setupInterfaceByRole();
 
-            // CORREÇÃO: Configurar os botões após mostrar o dashboard
+            // Configurar os botões
             setTimeout(() => {
                 setupTabButtons();
+                fixIPhoneButtons(); // <-- ADICIONE ESTA LINHA
+
                 // Garantir que a tab inicial seja dashboard
                 const dashboardBtn = document.querySelector('.tab-button[data-tab="dashboard"]');
                 if (dashboardBtn) {
@@ -2130,10 +2246,10 @@
             }
         }
 
-function switchTab(tab) {
-    console.log('Função switchTab chamada para:', tab);
-    return;
-}
+        function switchTab(tab) {
+            console.log('Função switchTab chamada para:', tab);
+            return;
+        }
 
         // ============================================
         // FUNÇÕES AUXILIARES
@@ -2193,7 +2309,7 @@ function switchTab(tab) {
 
         function showAbout() {
             closeMenu();
-            alert('Sistema de Ferramentas Mobile v3\n\nDesenvolvido por Fábio Mendes Rodrigues.\n\n© 2026 FW Company');
+            alert('Sistema de Ferramentas Mobile v3.1\n\nDesenvolvido por Fábio Mendes Rodrigues.\n\n© 2026 FW Company');
         }
 
         function showHelp() {
